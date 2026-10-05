@@ -126,10 +126,12 @@ export default function HomePage({
   home,
   panels,
   carousel,
+  darkArrivals = false,
 }: {
   home: StoreHome;
   panels: PanelGridItem[];
   carousel?: boolean;
+  darkArrivals?: boolean;
 }) {
   const router = useRouter();
   const [promo, setPromo] = useState(false);
@@ -137,7 +139,7 @@ export default function HomePage({
 
   return (
     <SiteFrame>
-      <main id="main" className={carousel ? styles.example1 : undefined}>
+      <main id="main" className={darkArrivals ? styles.example1 : undefined}>
         {carousel ? (
           <>
             <CampaignCarousel home={home} panels={panels} onNavigate={open} onDetails={() => setPromo(true)} />
@@ -178,5 +180,5 @@ export async function getServerSideProps(ctx: Parameters<typeof scopeFrom>[0]) {
     getHomePanels(content).catch(() => [] as PanelGridItem[]),
     getHomePage(content).catch(() => emptyHome),
   ]);
-  return { props: { panels, home, carousel: site.key === "example1" } };
+  return { props: { panels, home, carousel: home.heroLayout === "carousel", darkArrivals: site.key === "example1" } };
 }

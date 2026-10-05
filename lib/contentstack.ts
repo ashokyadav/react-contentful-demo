@@ -365,6 +365,7 @@ export type StoreHome = {
     imageAlt: string;
     actions: StoreHomeAction[];
   } | null;
+  heroLayout: "banner" | "carousel";
   arrivals: {
     id: string;
     title: string;
@@ -402,6 +403,7 @@ export type StoreHome = {
 
 export const emptyHome: StoreHome = {
   hero: null,
+  heroLayout: "banner",
   arrivals: null,
   feature: null,
   products: null,
@@ -430,6 +432,7 @@ type CsHero = {
   image?: unknown;
   image_alt?: string;
   actions?: CsAction[];
+  hero_layout?: string;
 };
 type CsBand = {
   heading?: string;
@@ -655,6 +658,7 @@ export async function getHomePage(scopeOrPreview?: StoreScope | string): Promise
     services: servicesOf(services),
     heritage: heritageOf(heritage),
     offer: offerOf(offer),
+    heroLayout: hero?.hero_layout === "carousel" ? "carousel" : "banner",
   };
 }
 
