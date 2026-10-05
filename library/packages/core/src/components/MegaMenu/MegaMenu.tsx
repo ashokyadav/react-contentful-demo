@@ -145,7 +145,6 @@ export function MegaMenu({
               </div>
             )}
           </div>
-          <button type="button" className={s.close} onClick={close}>Close</button>
         </div>
       )}
     </div>

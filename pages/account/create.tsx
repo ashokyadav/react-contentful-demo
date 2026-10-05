@@ -13,7 +13,7 @@ import {
 } from "@myproject/core";
 import { SiteFrame } from "../../components/SiteFrame";
 import { createShopper, validEmail } from "../../lib/account";
-import { getAccountPage, getSite, type AccountCopy } from "../../lib/contentstack";
+import { getAccountPage, getSite, withScope, type AccountCopy } from "../../lib/contentstack";
 import { persistScope, scopeFor, scopeFrom } from "../../lib/scope";
 import styles from "../../styles/account.module.scss";
 
@@ -53,7 +53,7 @@ export default function CreateAccountPage({ copy }: { copy: AccountCopy }) {
       requestAnimationFrame(() => summaryRef.current?.focus());
       return;
     }
-    router.push("/account");
+    router.push(withScope("/account", { site: site.key, locale: site.locale }));
   };
 
   const errorList = (Object.entries(errors) as Array<[keyof CreateErrors, string]>).map(([field, message]) => ({
@@ -87,7 +87,7 @@ export default function CreateAccountPage({ copy }: { copy: AccountCopy }) {
             </Form>
             <p className={styles.switch}>
               {`${copy.have} `}
-              <a href={`/account?${new URLSearchParams({ ...(site.key ? { site: site.key } : {}), locale: site.locale })}`}>{copy.signIn}</a>
+              <a href={withScope("/account", { site: site.key, locale: site.locale })}>{copy.signIn}</a>
             </p>
           </div>
         </Container>

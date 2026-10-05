@@ -72,7 +72,7 @@ export type { PaginationProps } from "./components/Pagination/Pagination";
 // Feedback
 export { Alert } from "./components/Alert/Alert";
 export type { AlertProps } from "./components/Alert/Alert";
-export { ToastProvider, useToast } from "./components/Toast/Toast";
+export { ToastAnchor, ToastProvider, useToast } from "./components/Toast/Toast";
 export type { ToastOptions } from "./components/Toast/Toast";
 export { Modal } from "./components/Modal/Modal";
 export type { ModalProps } from "./components/Modal/Modal";

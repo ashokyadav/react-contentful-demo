@@ -15,7 +15,7 @@ const meta: Meta<typeof MegaMenu> = {
         component: `
 A department bar that opens a full-width panel. Give each item \`columns\` of links and optional \`features\` (image plus label).
 
-Put it in the Navbar \`navigation\` slot. Hover or focus a department to open its panel. The first click opens the panel; the next click follows \`href\`. Escape or Close dismisses it.
+Put it in the Navbar \`navigation\` slot. Hover or focus a department to open its panel. The first click opens the panel; the next click follows \`href\`. Escape dismisses it.
 
 \`\`\`tsx
 <Navbar

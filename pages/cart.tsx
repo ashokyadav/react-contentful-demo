@@ -18,7 +18,7 @@ import {
 import { cartKey, useCart, type CartLine } from "../components/CartStore";
 import { PayPalButton } from "../components/PayPalButton";
 import { SiteFrame } from "../components/SiteFrame";
-import { fill, getCartPage, getSite, withScope, type StoreCart } from "../lib/contentstack";
+import { fill, getCartPage, getCartPictures, getSite, withScope, type CartPicture, type StoreCart } from "../lib/contentstack";
 import { writeCheckout } from "../lib/checkoutDraft";
 import { persistScope, scopeFor, scopeFrom } from "../lib/scope";
 import styles from "../styles/cart.module.scss";
@@ -26,9 +26,33 @@ import styles from "../styles/cart.module.scss";
 const money = (value: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
 
+function imageSources(line: CartLine, pictures: CartPicture[]) {
+  const picture = pictures.find((item) => item.id === line.id);
+  const swatch = picture?.swatches.find((item) => item.value === line.color);
+  return [...new Set([swatch?.image, picture?.image, line.image].filter((src): src is string => Boolean(src)))];
+}
+
+function LineImage({ line, pictures }: { line: CartLine; pictures: CartPicture[] }) {
+  const sources = imageSources(line, pictures);
+  const [index, setIndex] = useState(0);
+  const src = sources[index];
+  if (!src) return null;
+  return (
+    <Image
+      src={src}
+      alt={line.alt}
+      aspectRatio="3/4"
+      loading="eager"
+      decoding="auto"
+      onError={() => setIndex((current) => (current + 1 < sources.length ? current + 1 : current))}
+    />
+  );
+}
+
 function BagLine({
   line,
   page,
+  pictures,
   onQuantity,
   onDelivery,
   onEdit,
@@ -39,6 +63,7 @@ function BagLine({
 }: {
   line: CartLine;
   page: StoreCart;
+  pictures: CartPicture[];
   onQuantity: (quantity: number) => void;
   onDelivery?: (delivery: CartLine["delivery"]) => void;
   onEdit: () => void;
@@ -50,7 +75,7 @@ function BagLine({
   return (
     <article className={styles.line}>
       <a href={line.href} className={styles.thumb}>
-        <Image src={line.image} alt={line.alt} aspectRatio="3/4" />
+        <LineImage key={imageSources(line, pictures).join("|")} line={line} pictures={pictures} />
       </a>
       <div>
         <h2><a href={line.href}>{line.title}</a></h2>
@@ -93,7 +118,7 @@ function BagLine({
   );
 }
 
-export default function CartPage({ page }: { page: StoreCart }) {
+export default function CartPage({ page, pictures = [] }: { page: StoreCart; pictures?: CartPicture[] }) {
   const router = useRouter();
   const site = useSite();
   const scoped = (href: string) => withScope(href, { site: site.key, locale: site.locale });
@@ -148,6 +173,7 @@ export default function CartPage({ page }: { page: StoreCart }) {
                       <BagLine
                         key={key}
                         page={page}
+                        pictures={pictures}
                         line={{ ...line, href: scoped(line.href) }}
                         onQuantity={(quantity) => updateQuantity(key, quantity)}
                         onDelivery={(delivery) => setDelivery(key, delivery)}
@@ -179,6 +205,7 @@ export default function CartPage({ page }: { page: StoreCart }) {
                         <BagLine
                           key={key}
                           page={page}
+                          pictures={pictures}
                           line={{ ...line, href: scoped(line.href) }}
                           onQuantity={() => undefined}
                           onEdit={() => router.push(scoped(line.href))}
@@ -270,5 +297,6 @@ export async function getServerSideProps(ctx: Parameters<typeof scopeFrom>[0]) {
   persistScope(ctx, content);
   const page = await getCartPage(content);
   if (!page) return { notFound: true };
-  return { props: { page } };
+  const pictures = await getCartPictures(content);
+  return { props: { page, pictures } };
 }

@@ -19,7 +19,7 @@ import { IconBag, IconUser } from "@myproject/icons";
 import { SiteFrame } from "../../components/SiteFrame";
 import { currentShopper, signIn, signOut, validEmail, type Shopper } from "../../lib/account";
 import { useSite } from "../../components/SiteContext";
-import { fill, getAccountPage, getCheckout, getSite, type AccountCopy } from "../../lib/contentstack";
+import { fill, getAccountPage, getCheckout, getSite, withScope, type AccountCopy } from "../../lib/contentstack";
 import { listOrders, readOrder, type PlacedOrder } from "../../lib/checkoutDraft";
 import { persistScope, scopeFor, scopeFrom } from "../../lib/scope";
 import styles from "../../styles/account.module.scss";
@@ -32,6 +32,7 @@ type SignInErrors = Partial<Record<"email" | "password", string>>;
 export default function AccountPage({ copy, methods }: { copy: AccountCopy; methods: { id: string; label: string; detail: string; price?: number }[] }) {
   const router = useRouter();
   const site = useSite();
+  const scoped = (href: string) => withScope(href, { site: site.key, locale: site.locale });
   const summaryRef = useRef<HTMLDivElement>(null);
   const [shopper, setShopper] = useState<Shopper | null>(null);
   const [ready, setReady] = useState(false);
@@ -119,7 +120,7 @@ export default function AccountPage({ copy, methods }: { copy: AccountCopy; meth
                       getRowKey={(row) => row.number}
                       emptyMessage={copy.empty}
                     />
-                    {receipt && <a href="/checkout/confirmation">{copy.receipt}</a>}
+                    {receipt && <a href={scoped("/checkout/confirmation")}>{copy.receipt}</a>}
                   </div>
                 ) : (
                   <div className={styles.panel}>
@@ -146,8 +147,8 @@ export default function AccountPage({ copy, methods }: { copy: AccountCopy; meth
                 <Navigation
                   label={copy.title}
                   items={[
-                    { label: copy.profile, href: "/account", current: view === "profile", icon: <IconUser size="sm" /> },
-                    { label: copy.orders, href: "/account?view=orders", current: view === "orders", icon: <IconBag size="sm" /> },
+                    { label: copy.profile, href: scoped("/account"), current: view === "profile", icon: <IconUser size="sm" /> },
+                    { label: copy.orders, href: scoped("/account?view=orders"), current: view === "orders", icon: <IconBag size="sm" /> },
                   ]}
                 />
               </Sidebar>
@@ -168,11 +169,11 @@ export default function AccountPage({ copy, methods }: { copy: AccountCopy; meth
               </Form>
               <p className={styles.switch}>
                 {`${copy.newHere} `}
-                <a href="/account/create">{copy.create}</a>
+                <a href={scoped("/account/create")}>{copy.create}</a>
               </p>
               {errors.email === copy.missing && (
                 <Alert tone="info" title={copy.create}>
-                  <p><a href="/account/create">{copy.create}</a></p>
+                  <p><a href={scoped("/account/create")}>{copy.create}</a></p>
                 </Alert>
               )}
             </div>

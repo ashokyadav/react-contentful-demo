@@ -15,10 +15,12 @@ export interface ToastOptions {
    */
   duration?: number;
   action?: { label: string; onClick: () => void };
+  /** Render this toast in a matching `ToastAnchor` instead of the viewport corner. */
+  slot?: string;
 }
 interface ToastRecord extends ToastOptions { id: number; }
 
-const ToastContext = React.createContext<{ show: (t: ToastOptions) => number; dismiss: (id: number) => void } | null>(null);
+const ToastContext = React.createContext<{ show: (t: ToastOptions) => number; dismiss: (id: number) => void; toasts: ToastRecord[] } | null>(null);
 
 export function useToast() {
   const ctx = React.useContext(ToastContext);
@@ -37,7 +39,7 @@ export function ToastProvider({ children, label = "Notifications" }: { children:
     setToasts((t) => [...t, { id, ...opts }]);
     return id;
   }, []);
-  const api = React.useMemo(() => ({ show, dismiss }), [show, dismiss]);
+  const api = React.useMemo(() => ({ show, dismiss, toasts }), [show, dismiss, toasts]);
 
   React.useEffect(() => setMounted(true), []);
 
@@ -76,7 +78,7 @@ export function ToastProvider({ children, label = "Notifications" }: { children:
     <section ref={regionRef} aria-label={label} className={s.region}>
       <div aria-live="polite" aria-relevant="additions">
         <ol className={s.list}>
-          {toasts.map((t) => <ToastItem key={t.id} toast={t} onDismiss={() => dismiss(t.id)} />)}
+          {toasts.filter((toast) => !toast.slot).map((t) => <ToastItem key={t.id} toast={t} onDismiss={() => dismiss(t.id)} />)}
         </ol>
       </div>
     </section>
@@ -88,6 +90,25 @@ export function ToastProvider({ children, label = "Notifications" }: { children:
       {/* Portal to the document so a transformed parent cannot park the toast off screen. */}
       {mounted ? createPortal(region, document.body) : region}
     </ToastContext.Provider>
+  );
+}
+
+export function ToastAnchor({ id }: { id: string }) {
+  const ctx = React.useContext(ToastContext);
+  const ref = React.useRef<HTMLDivElement>(null);
+  const mine = ctx?.toasts.filter((toast) => toast.slot === id) ?? [];
+
+  React.useEffect(() => {
+    if (mine.length) ref.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [mine.length]);
+
+  if (!ctx || !mine.length) return null;
+  return (
+    <div ref={ref} className={s.anchor}>
+      <ol className={s.list}>
+        {mine.map((toast) => <ToastItem key={toast.id} toast={toast} onDismiss={() => ctx.dismiss(toast.id)} />)}
+      </ol>
+    </div>
   );
 }
 

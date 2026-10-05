@@ -1,5 +1,5 @@
 export async function getServerSideProps() {
-  return { redirect: { destination: "/clothing/dress-shirts", permanent: false } };
+  return { redirect: { destination: "/clothing/apparel", permanent: false } };
 }
 
 export default function FridayShirtRedirect() {

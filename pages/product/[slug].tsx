@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { Accordion, Badge, Breadcrumbs, Button, Container, Gallery, OptionGroup, Price, QuantityInput, useToast } from "@myproject/core";
+import { Accordion, Badge, Breadcrumbs, Button, Container, Gallery, OptionGroup, Price, QuantityInput, ToastAnchor, useToast } from "@myproject/core";
 import { useCart } from "../../components/CartStore";
 import { PageMeta } from "../../components/PageMeta";
 import { SiteFrame } from "../../components/SiteFrame";
@@ -41,11 +41,13 @@ export default function ProductPage({ product, department, crumbs, color }: Prod
       ...(selected ? { color: selected } : {}),
     }, qty);
     if (added === 0) {
-      show({ tone: "info", message: `Your bag already has 10 ${product.title}.` });
+      show({ slot: "bag", tone: "info", duration: 4000, message: `Your bag already has 10 ${product.title}.` });
       return;
     }
     show({
+      slot: "bag",
       tone: "success",
+      duration: 4000,
       message: `Added ${added} ${product.title} to your bag.`,
       action: { label: "View bag", onClick: () => router.push(withScope("/cart", { site: site.key, locale: site.locale })) },
     });
@@ -86,6 +88,7 @@ export default function ProductPage({ product, department, crumbs, color }: Prod
                   },
                 ]}
               />
+              <ToastAnchor id="bag" />
             </div>
           </div>
         </Container>

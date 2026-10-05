@@ -127,18 +127,19 @@ export function SiteFrame({ children, current = "", showBanner = true }: { child
   const rewards = `${site.name} ${chrome.rewardsSuffix}`.trim();
   const localeChoices = site.locales.length > 1 ? site.locales : [];
 
-  const departmentHref = menus.find((item) => item.href.startsWith("/clothing"))?.href || "/account";
+  const scoped = (href: string) => hrefWithLocale(href, site.key, site.locale);
+  const departmentHref = menus.find((item) => item.href.startsWith("/clothing"))?.href || scoped("/account");
   const openAccount = (id: string) => {
     if (id === "sign-in" || id === "enroll" || id === "learn-more" || id === "wishlist" || id === "rewards") {
-      router.push("/account");
+      router.push(scoped("/account"));
       return;
     }
     if (id === "create-account") {
-      router.push("/account/create");
+      router.push(scoped("/account/create"));
       return;
     }
     if (id === "track") {
-      router.push("/account?view=orders");
+      router.push(scoped("/account?view=orders"));
       return;
     }
     if (id === "stores") {
@@ -166,7 +167,7 @@ export function SiteFrame({ children, current = "", showBanner = true }: { child
       <Header sticky className={styles.siteHeader} mainContentId="main">
         <Navbar
           banner={showBanner && chrome.offers.length > 0 ? <PromoTicker offers={chrome.offers} previousLabel={chrome.previousOffer} nextLabel={chrome.nextOffer} /> : undefined}
-          bannerLeading={showBanner ? <a href="/account">{rewards}</a> : undefined}
+          bannerLeading={showBanner ? <a href={scoped("/account")}>{rewards}</a> : undefined}
           bannerTrailing={showBanner && localeChoices.length > 0 ? (
             <span className={styles.locales}>
               {localeChoices.map((code) => (
@@ -191,11 +192,11 @@ export function SiteFrame({ children, current = "", showBanner = true }: { child
             <MobileMenu
               items={menus}
               links={[
-                { id: "sign-in", label: chrome.signIn, href: "/account" },
-                { id: "create-account", label: chrome.createAccount, href: "/account/create" },
-                { id: "rewards", label: rewards, href: "/account" },
-                { id: "wishlist", label: chrome.wishlist, href: "/account" },
-                { id: "track", label: chrome.track, href: "/account?view=orders" },
+                { id: "sign-in", label: chrome.signIn, href: scoped("/account") },
+                { id: "create-account", label: chrome.createAccount, href: scoped("/account/create") },
+                { id: "rewards", label: rewards, href: scoped("/account") },
+                { id: "wishlist", label: chrome.wishlist, href: scoped("/account") },
+                { id: "track", label: chrome.track, href: scoped("/account?view=orders") },
                 { id: "stores", label: chrome.storeLabel, href: departmentHref },
               ]}
               onSearch={() => setSearch(true)}
@@ -225,13 +226,13 @@ export function SiteFrame({ children, current = "", showBanner = true }: { child
                 <AccountMenu
                   rewardsTitle={rewards}
                   rewardsLine={chrome.rewardsLine}
-                  signIn={{ id: "sign-in", label: chrome.signIn, href: "/account" }}
-                  createAccount={{ id: "create-account", label: chrome.createAccount, href: "/account/create" }}
-                  enroll={{ id: "enroll", label: chrome.enroll, href: "/account" }}
-                  learnMore={{ id: "learn-more", label: chrome.learnMore, href: "/account" }}
+                  signIn={{ id: "sign-in", label: chrome.signIn, href: scoped("/account") }}
+                  createAccount={{ id: "create-account", label: chrome.createAccount, href: scoped("/account/create") }}
+                  enroll={{ id: "enroll", label: chrome.enroll, href: scoped("/account") }}
+                  learnMore={{ id: "learn-more", label: chrome.learnMore, href: scoped("/account") }}
                   links={[
-                    { id: "wishlist", label: chrome.wishlist, href: "/account" },
-                    { id: "track", label: chrome.track, href: "/account?view=orders" },
+                    { id: "wishlist", label: chrome.wishlist, href: scoped("/account") },
+                    { id: "track", label: chrome.track, href: scoped("/account?view=orders") },
                   ]}
                   onSelect={openAccount}
                 />

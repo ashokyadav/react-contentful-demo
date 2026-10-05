@@ -133,14 +133,17 @@ function featuresOf(features: CsFeature[] | undefined): MegaMenuItem["features"]
   });
 }
 
-export function toMegaMenu(entry: CsMenu | undefined): { label?: string; items: MegaMenuItem[] } {
+export function toMegaMenu(entry: CsMenu | undefined, scope: StoreScope = {}): { label?: string; items: MegaMenuItem[] } {
   const departments = (entry?.departments ?? []).filter((department) => department && department.uid);
   const items = departments.map((department) => ({
     id: department.department_key || department.uid || department.title || "department",
     label: department.label || department.title || "Department",
-    href: department.url || "#",
-    columns: columnsOf(department.columns),
-    features: featuresOf(department.features),
+    href: withScope(department.url || "#", scope),
+    columns: columnsOf(department.columns)?.map((column) => ({
+      ...column,
+      links: column.links.map((link) => ({ ...link, href: withScope(link.href, scope) })),
+    })),
+    features: featuresOf(department.features)?.map((feature) => ({ ...feature, href: withScope(feature.href, scope) })),
   }));
   const label = entry?.accessible_name?.trim();
   return { label: label || undefined, items };
@@ -176,7 +179,22 @@ export async function getMegaMenu(scopeOrPreview?: StoreScope | string): Promise
 
   let entry = await load();
   if (!entry && scope.locale && scope.locale !== "en-us") entry = await load("en-us");
-  return toMegaMenu(entry);
+  const menu = toMegaMenu(entry, scope);
+  const paths = await publishedPaths(scope);
+  return {
+    ...menu,
+    items: menu.items.flatMap((item) => {
+      const columns = item.columns?.map((column) => ({
+        ...column,
+        links: column.links.filter((link) => linkIsLive(link.href, paths)),
+      })).filter((column) => column.links.length);
+      const features = item.features?.filter((feature) => linkIsLive(feature.href, paths));
+      const hrefLive = linkIsLive(item.href, paths);
+      if (!hrefLive && !columns?.length && !features?.length) return [];
+      const href = hrefLive ? item.href : columns?.[0]?.links[0]?.href || features?.[0]?.href || item.href;
+      return [{ ...item, href, columns, features }];
+    }),
+  };
 }
 
 export type StoreFooterLink = { label: string; href: string };
@@ -267,7 +285,17 @@ export async function getFooter(scopeOrPreview?: StoreScope | string): Promise<S
   ]);
   const footerEntry = pickScoped(footerBody.entries ?? [], scope.siteUid || "");
   const items = (itemBody.entries ?? []).filter((item) => entryMatchesSite(item.sites, scope.siteUid || ""));
-  return footerOf(footerEntry, items);
+  const footer = footerOf(footerEntry, items);
+  const paths = await publishedPaths(scope);
+  const scopeLink = (link: StoreFooterLink) => ({ ...link, href: withScope(link.href, scope) });
+  return {
+    ...footer,
+    columns: footer.columns.flatMap((column) => {
+      const links = column.links.map(scopeLink).filter((link) => linkIsLive(link.href, paths));
+      return links.length ? [{ ...column, links }] : [];
+    }),
+    legal: footer.legal.map(scopeLink).filter((link) => linkIsLive(link.href, paths)),
+  };
 }
 
 export type StorePanel = {
@@ -335,7 +363,7 @@ export async function getHomePanels(scopeOrPreview?: StoreScope | string): Promi
   return (body.entries ?? []).flatMap((entry) => {
     if (!entryMatchesSite(entry.sites, scope.siteUid || "")) return [];
     const panel = panelOf(entry);
-    return panel ? [panel] : [];
+    return panel ? [{ ...panel, action: { ...panel.action, href: withScope(panel.action.href, scope) } }] : [];
   });
 }
 
@@ -650,12 +678,17 @@ export async function getHomePage(scopeOrPreview?: StoreScope | string): Promise
   const productRow = rowOf(products);
   const arrivalProducts = arrivalBand ? cardsForSite(arrivalBand.products, byHref) : [];
   const rowProducts = productRow ? cardsForSite(productRow.products, byHref) : [];
+  const scopeCard = (card: StoreHomeCard) => ({ ...card, href: withScope(card.href, scope) });
+  const scopeAction = (action: StoreHomeAction) => ({ ...action, href: withScope(action.href, scope) });
+  const heroBand = heroOf(hero);
+  const featureBand = featureOf(feature);
+  const serviceBand = servicesOf(services);
   return {
-    hero: heroOf(hero),
-    arrivals: arrivalBand && arrivalProducts.length ? { ...arrivalBand, products: arrivalProducts } : null,
-    feature: featureOf(feature),
-    products: productRow && rowProducts.length ? { ...productRow, products: rowProducts } : null,
-    services: servicesOf(services),
+    hero: heroBand ? { ...heroBand, actions: heroBand.actions.map(scopeAction) } : null,
+    arrivals: arrivalBand && arrivalProducts.length ? { ...arrivalBand, action: scopeAction(arrivalBand.action), products: arrivalProducts.map(scopeCard) } : null,
+    feature: featureBand ? { ...featureBand, action: scopeAction(featureBand.action) } : null,
+    products: productRow && rowProducts.length ? { ...productRow, products: rowProducts.map(scopeCard) } : null,
+    services: serviceBand ? { ...serviceBand, stories: serviceBand.stories.map((story) => ({ ...story, href: withScope(story.href, scope) })) } : null,
     heritage: heritageOf(heritage),
     offer: offerOf(offer),
     heroLayout: hero?.hero_layout === "carousel" ? "carousel" : "banner",
@@ -820,7 +853,7 @@ function productOf(entry: CsProduct): StoreProduct | null {
 }
 
 export function withScope(href: string, scope: StoreScope) {
-  if (/^(https?:|mailto:|tel:)/.test(href)) return href;
+  if (!href || href.startsWith("#") || /^(https?:|mailto:|tel:)/.test(href)) return href;
   const [path, hash = ""] = href.split("#");
   const [pathname, search = ""] = path.split("?");
   const params = new URLSearchParams(search);
@@ -832,6 +865,25 @@ export function withScope(href: string, scope: StoreScope) {
 
 function scopeCrumb(crumb: { label: string; href?: string }, scope: StoreScope) {
   return crumb.href ? { ...crumb, href: withScope(crumb.href, scope) } : crumb;
+}
+
+async function publishedPaths(scope: StoreScope) {
+  const [categories, products] = await Promise.all([
+    delivery<{ entries?: { url?: string; sites?: SiteRef[] }[] }>("/v3/content_types/category_page/entries", { locale: scope.locale }),
+    delivery<{ entries?: { url?: string; sites?: SiteRef[] }[] }>("/v3/content_types/product/entries", { locale: scope.locale }),
+  ]);
+  const paths = new Set<string>();
+  for (const entry of [...(categories.entries ?? []), ...(products.entries ?? [])]) {
+    if (!entry.url || !entryMatchesSite(entry.sites, scope.siteUid || "")) continue;
+    paths.add(entry.url.split(/[?#]/)[0]);
+  }
+  return paths;
+}
+
+function linkIsLive(href: string, paths: Set<string>) {
+  const path = href.split(/[?#]/)[0] || "/";
+  if (!path.startsWith("/clothing/") && !path.startsWith("/product/")) return true;
+  return paths.has(path);
 }
 
 function catalogOf(entry: CsCategoryPage, siteUid = ""): StoreCatalog | null {
@@ -927,7 +979,12 @@ export async function getCategoryPage(urlPath: string, scopeOrPreview?: StoreSco
     const product = productOf(productEntry);
     return product ? [[product.id, product] as const] : [];
   }));
-  catalog.products = catalog.products.map((product) => full.get(product.id) || product);
+  catalog.products = catalog.products.map((product) => {
+    const fullProduct = full.get(product.id) || product;
+    return { ...fullProduct, href: withScope(fullProduct.href, scope) };
+  });
+  catalog.promo = { ...catalog.promo, href: withScope(catalog.promo.href, scope) };
+  catalog.categories = catalog.categories.map((category) => (category.href ? { ...category, href: withScope(category.href, scope) } : category));
   catalog.crumbs = catalog.crumbs.map((crumb) => scopeCrumb(crumb, scope));
   return catalog;
 }
@@ -965,12 +1022,12 @@ export async function searchStore(term: string, scopeOrPreview?: StoreScope | st
     const product = productOf(entry);
     if (!product) continue;
     if (!`${product.title} ${product.alt}`.toLowerCase().includes(query)) continue;
-    hits.push({ value: product.href, label: product.title, description: product.alt });
+    hits.push({ value: withScope(product.href, scope), label: product.title, description: product.alt });
   }
   for (const entry of categories) {
     if (!entryMatchesSite(entry.sites, siteUid) || !entry.title || !entry.url) continue;
     if (!`${entry.title} ${entry.lede || ""}`.toLowerCase().includes(query)) continue;
-    hits.push({ value: entry.url.split("?")[0], label: entry.title, description: entry.lede || "" });
+    hits.push({ value: withScope(entry.url.split("?")[0], scope), label: entry.title, description: entry.lede || "" });
   }
   return hits.slice(0, 8);
 }
@@ -1155,7 +1212,7 @@ type CsChrome = {
   notes?: { note_id?: string; text?: string }[];
 };
 
-function chromeOf(entry: CsChrome | undefined): StoreChrome {
+function chromeOf(entry: CsChrome | undefined, scope: StoreScope = {}): StoreChrome {
   if (!entry) return emptyChrome;
   return {
     placeholder: textOf(entry.search_placeholder),
@@ -1177,16 +1234,16 @@ function chromeOf(entry: CsChrome | undefined): StoreChrome {
     nextOffer: textOf(entry.next_offer),
     localeLabels: (entry.locale_labels ?? []).flatMap((item) => (item.code && item.label ? [{ code: item.code, label: item.label }] : [])),
     offers: (entry.offers ?? []).flatMap((offer) => {
-      const links = (offer.links ?? []).flatMap((link) => (link.label && link.href ? [{ label: link.label, href: link.href }] : []));
+      const links = (offer.links ?? []).flatMap((link) => (link.label && link.href ? [{ label: link.label, href: withScope(link.href, scope) }] : []));
       return offer.label ? [{ label: offer.label, links }] : [];
     }),
-    suggestions: (entry.suggestions ?? []).flatMap((item) => (item.value && item.label ? [{ value: item.value, label: item.label, description: textOf(item.description) }] : [])),
+    suggestions: (entry.suggestions ?? []).flatMap((item) => (item.value && item.label ? [{ value: item.value.startsWith("/") ? withScope(item.value, scope) : item.value, label: item.label, description: textOf(item.description) }] : [])),
     notes: Object.fromEntries((entry.notes ?? []).flatMap((note) => (note.note_id ? [[note.note_id, textOf(note.text)]] : []))),
   };
 }
 
 export async function getChrome(scope?: StoreScope): Promise<StoreChrome> {
-  return chromeOf(await firstEntry<CsChrome>("store_chrome", scope));
+  return chromeOf(await firstEntry<CsChrome>("store_chrome", scope), scope);
 }
 
 export type StoreCart = {
@@ -1345,7 +1402,33 @@ function cartOf(entry: CsCart | undefined): StoreCart | null {
 }
 
 export async function getCartPage(scope?: StoreScope): Promise<StoreCart | null> {
-  return cartOf(await firstEntry<CsCart>("cart_page", scope));
+  const cart = cartOf(await firstEntry<CsCart>("cart_page", scope));
+  if (!cart) return null;
+  const current = scope ?? {};
+  const paths = await publishedPaths(current);
+  const liveHref = (href: string, fallback: string) => withScope(linkIsLive(href, paths) ? href : fallback, current);
+  return {
+    ...cart,
+    bannerHref: liveHref(cart.bannerHref, "/account"),
+    continueHref: liveHref(cart.continueHref, "/"),
+  };
+}
+
+export type CartPicture = Pick<StoreProduct, "id" | "image" | "alt" | "swatches">;
+
+/** Current published photos, so a bag saved earlier still shows a live image. */
+export async function getCartPictures(scope: StoreScope = {}): Promise<CartPicture[]> {
+  try {
+    const body = await delivery<{ entries?: CsProduct[] }>("/v3/content_types/product/entries", { locale: scope.locale });
+    return (body.entries ?? []).flatMap((entry) => {
+      if (!entryMatchesSite(entry.sites, scope.siteUid || "")) return [];
+      const product = productOf(entry);
+      if (!product) return [];
+      return [{ id: product.id, image: product.image, alt: product.alt, swatches: product.swatches }];
+    });
+  } catch {
+    return [];
+  }
 }
 
 export type CheckoutChoice = { id: string; label: string; detail: string; price?: number };
@@ -1516,13 +1599,13 @@ type CsCheckout = {
   receipt?: string;
 };
 
-function checkoutOf(entry: CsCheckout | undefined): StoreCheckout | null {
+function checkoutOf(entry: CsCheckout | undefined, scope: StoreScope = {}): StoreCheckout | null {
   if (!entry?.steps?.length || !entry.methods?.length) return null;
   const choice = (item: { method_id?: string; label?: string; detail?: string; price?: number }): CheckoutChoice | null => (
     item.method_id && item.label ? { id: item.method_id, label: item.label, detail: textOf(item.detail), ...(typeof item.price === "number" ? { price: item.price } : {}) } : null
   );
   return {
-    steps: (entry.steps ?? []).flatMap((step) => (step.label ? [{ label: step.label, href: textOf(step.href) }] : [])),
+    steps: (entry.steps ?? []).flatMap((step) => (step.label ? [{ label: step.label, href: withScope(textOf(step.href), scope) }] : [])),
     payments: (entry.payments ?? []).flatMap((item) => { const mapped = choice(item); return mapped ? [mapped] : []; }),
     methods: (entry.methods ?? []).flatMap((item) => { const mapped = choice(item); return mapped ? [mapped] : []; }),
     countries: (entry.countries ?? []).flatMap((item) => (item.value && item.label ? [{ value: item.value, label: item.label }] : [])),
@@ -1605,7 +1688,7 @@ function checkoutOf(entry: CsCheckout | undefined): StoreCheckout | null {
 }
 
 export async function getCheckout(scope?: StoreScope): Promise<StoreCheckout | null> {
-  return checkoutOf(await firstEntry<CsCheckout>("checkout_page", scope));
+  return checkoutOf(await firstEntry<CsCheckout>("checkout_page", scope), scope);
 }
 
 export function checkoutStepsFor(checkout: StoreCheckout, current: number) {
