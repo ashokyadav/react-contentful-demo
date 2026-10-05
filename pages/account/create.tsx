@@ -87,7 +87,7 @@ export default function CreateAccountPage({ copy }: { copy: AccountCopy }) {
             </Form>
             <p className={styles.switch}>
               {`${copy.have} `}
-              <a href="/account">{copy.signIn}</a>
+              <a href={`/account?${new URLSearchParams({ ...(site.key ? { site: site.key } : {}), locale: site.locale })}`}>{copy.signIn}</a>
             </p>
           </div>
         </Container>
