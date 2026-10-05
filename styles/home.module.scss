@@ -184,14 +184,31 @@ header.siteHeader {
 
 .signup {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-sm);
+  flex-wrap: nowrap;
   align-items: flex-end;
+  gap: var(--spacing-sm);
   margin-top: var(--spacing-xl);
   max-width: 36rem;
 }
 
-.signupField { margin-bottom: 0; }
+.signup .signupField {
+  flex: 1 1 auto;
+  margin-bottom: 0;
+}
+
+.signup button {
+  height: 44px;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 599px) {
+  .signup {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .signup button { width: 100%; }
+}
 
 .legal {
   margin: var(--spacing-xl) 0 0;

@@ -230,16 +230,14 @@ export function SiteFrame({ children, current = "", showBanner = true }: { child
                 show({ tone: "success", message: footer.signup?.message || "" });
               }}
             >
-              <div style={{ flex: "1 1 16rem" }}>
-                <TextInput
-                  fieldClassName={styles.signupField}
-                  label={footer.signup.label}
-                  type="email"
-                  autoComplete="email"
-                  required
-                  placeholder={footer.signup.placeholder}
-                />
-              </div>
+              <TextInput
+                fieldClassName={styles.signupField}
+                label={footer.signup.label}
+                type="email"
+                autoComplete="email"
+                required
+                placeholder={footer.signup.placeholder}
+              />
               <Button type="submit" variant="secondary">{footer.signup.action}</Button>
             </Form>
           )}
