@@ -12,6 +12,7 @@ import {
 } from "@myproject/core";
 import { SiteFrame } from "../../components/SiteFrame";
 import { createShopper, validEmail } from "../../lib/account";
+import { useSite } from "../../components/SiteContext";
 import { getAccountPage, getSite, type AccountCopy } from "../../lib/contentstack";
 import { persistScope, scopeFor, scopeFrom } from "../../lib/scope";
 import styles from "../../styles/account.module.scss";
@@ -20,6 +21,7 @@ type CreateErrors = Partial<Record<"first" | "last" | "email" | "password" | "co
 
 export default function CreateAccountPage({ copy }: { copy: AccountCopy }) {
   const router = useRouter();
+  const site = useSite();
   const summaryRef = useRef<HTMLDivElement>(null);
   const [errors, setErrors] = useState<CreateErrors>({});
   const [pending, setPending] = useState(false);
@@ -44,7 +46,7 @@ export default function CreateAccountPage({ copy }: { copy: AccountCopy }) {
       return;
     }
     setPending(true);
-    const result = await createShopper({ first, last, email, password, emailOffers: data.get("offers") === "on" });
+    const result = await createShopper(site.key, { first, last, email, password, emailOffers: data.get("offers") === "on" });
     if (!result.ok) {
       setPending(false);
       setErrors({ email: result.error === "taken" ? copy.taken : copy.emailError });

@@ -11,9 +11,13 @@ function cookieValue(cookie: string, name: string) {
 
 function signedIn(req: NextApiRequest) {
   const value = cookieValue(req.headers.cookie || "", "shopper");
-  const split = value.indexOf("\t");
-  if (split <= 0) return { siteKey: "", email: "" };
-  return { siteKey: value.slice(0, split), email: value.slice(split + 1) };
+  if (!value.startsWith("{")) return { siteKey: "", email: "" };
+  try {
+    const parsed = JSON.parse(value) as { siteKey?: string; email?: string };
+    return { siteKey: parsed.siteKey || "", email: parsed.email || "" };
+  } catch {
+    return { siteKey: "", email: "" };
+  }
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -30,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(401).json({ error: "missing" });
       return;
     }
-    const orders = await ordersForShopper(site, session.email);
+    const orders = await ordersForShopper();
     res.status(200).json({ orders });
     return;
   }

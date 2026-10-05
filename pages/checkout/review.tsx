@@ -142,7 +142,7 @@ export default function ReviewPage({ checkout }: { checkout: StoreCheckout }) {
                   const billed = draft.billingSame === false && draft.billing ? draft.billing : draft.address;
                   setPlacing(true);
                   setSaveFailed(false);
-                  const result = await placeOrder({
+                  const result = await placeOrder(site.key, {
                     number: String(Date.now()).slice(-8),
                     lines: lines.map((line) => ({
                       id: line.id,

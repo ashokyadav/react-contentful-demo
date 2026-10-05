@@ -18,6 +18,7 @@ import {
 import { IconBag, IconUser } from "@myproject/icons";
 import { SiteFrame } from "../../components/SiteFrame";
 import { currentShopper, signIn, signOut, validEmail, type Shopper } from "../../lib/account";
+import { useSite } from "../../components/SiteContext";
 import { fill, getAccountPage, getCheckout, getSite, type AccountCopy } from "../../lib/contentstack";
 import { listOrders, readOrder, type PlacedOrder } from "../../lib/checkoutDraft";
 import { persistScope, scopeFor, scopeFrom } from "../../lib/scope";
@@ -30,6 +31,7 @@ type SignInErrors = Partial<Record<"email" | "password", string>>;
 
 export default function AccountPage({ copy, methods }: { copy: AccountCopy; methods: { id: string; label: string; detail: string; price?: number }[] }) {
   const router = useRouter();
+  const site = useSite();
   const summaryRef = useRef<HTMLDivElement>(null);
   const [shopper, setShopper] = useState<Shopper | null>(null);
   const [ready, setReady] = useState(false);
@@ -45,13 +47,13 @@ export default function AccountPage({ copy, methods }: { copy: AccountCopy; meth
       if (!active) return;
       setShopper(profile);
       setReceipt(Boolean(readOrder()));
-      if (profile) setOrders(await listOrders());
+      if (profile) setOrders(await listOrders(site.key, profile.email));
       setReady(true);
     });
     return () => {
       active = false;
     };
-  }, []);
+  }, [site.key]);
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -67,7 +69,7 @@ export default function AccountPage({ copy, methods }: { copy: AccountCopy; meth
       return;
     }
     setPending(true);
-    const result = await signIn(email, password);
+    const result = await signIn(site.key, email, password);
     setPending(false);
     if (!result.ok) {
       setErrors(result.error === "mismatch" ? { password: copy.mismatch } : { email: copy.missing });
@@ -75,7 +77,7 @@ export default function AccountPage({ copy, methods }: { copy: AccountCopy; meth
       return;
     }
     setShopper(result.shopper);
-    setOrders(await listOrders());
+    setOrders(await listOrders(site.key, result.shopper.email));
   };
 
   const rows = orders.map((item) => {

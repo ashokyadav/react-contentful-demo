@@ -1,3 +1,5 @@
+import { ordersFor, rememberOrder } from "./browserLedger";
+
 export type CheckoutAddress = {
   first: string;
   last: string;
@@ -86,7 +88,7 @@ export function writeOrder(order: PlacedOrder) {
   sessionStorage.setItem(orderKey, JSON.stringify(order));
 }
 
-export async function placeOrder(order: PlacedOrder) {
+export async function placeOrder(siteKey: string, order: PlacedOrder) {
   const response = await fetch("/api/orders", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -94,12 +96,10 @@ export async function placeOrder(order: PlacedOrder) {
   });
   const data = await response.json().catch(() => ({})) as { order?: PlacedOrder };
   if (!response.ok || !data.order) return { ok: false as const };
+  rememberOrder(siteKey, data.order);
   return { ok: true as const, order: data.order };
 }
 
-export async function listOrders() {
-  const response = await fetch("/api/orders");
-  if (!response.ok) return [];
-  const data = await response.json().catch(() => ({})) as { orders?: PlacedOrder[] };
-  return Array.isArray(data.orders) ? data.orders : [];
+export async function listOrders(siteKey: string, email: string) {
+  return ordersFor(siteKey, email);
 }

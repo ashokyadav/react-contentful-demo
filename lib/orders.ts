@@ -1,7 +1,4 @@
-import { pickScoped, type StoreSite } from "./contentstack";
 import type { CheckoutAddress, PlacedLine, PlacedOrder } from "./checkoutDraft";
-
-type SiteRef = { uid?: string } | string;
 
 type StoredLine = {
   line_id?: string;
@@ -44,64 +41,12 @@ type StoredOrder = {
   order_lines?: StoredLine[];
 };
 
-type AccountEntry = {
-  uid?: string;
-  sites?: SiteRef[];
-  orders?: StoredOrder[];
-};
-
-const skip = new Set(["uid", "created_at", "updated_at", "created_by", "updated_by", "ACL", "publish_details", "locale", "_version", "_in_progress", "tags"]);
-
-function managementHeaders() {
-  const apiKey = process.env.CONTENTSTACK_API_KEY;
-  const token = process.env.CONTENTSTACK_MANAGEMENT_TOKEN;
-  if (!apiKey || !token) throw new Error("Contentstack management is not configured");
-  return { api_key: apiKey, authorization: token, "Content-Type": "application/json" };
-}
-
-async function management<T>(pathname: string, options: { method?: string; body?: string } = {}): Promise<T> {
-  const response = await fetch(`https://eu-api.contentstack.com${pathname}`, {
-    ...options,
-    headers: managementHeaders(),
-  });
-  const body = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const detail = typeof body === "object" && body ? JSON.stringify(body).slice(0, 400) : "";
-    throw new Error(`Contentstack ${response.status} ${detail}`);
-  }
-  return body as T;
-}
-
 function text(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
 function amount(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : Number.NaN;
-}
-
-function editable(entry: AccountEntry) {
-  const body: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(entry)) {
-    if (skip.has(key) || key.startsWith("_")) continue;
-    body[key] = value;
-  }
-  if (Array.isArray(body.sites)) {
-    const sites = (body.sites as SiteRef[]).flatMap((site) => {
-      const uid = typeof site === "string" ? site : site?.uid || "";
-      return uid ? [{ uid, _content_type_uid: "site" }] : [];
-    });
-    if (sites.length) body.sites = sites;
-    else delete body.sites;
-  }
-  return body;
-}
-
-async function accountRecord(site: Pick<StoreSite, "id">) {
-  const body = await management<{ entries?: AccountEntry[] }>("/v3/content_types/account_page/entries?locale=en-us");
-  const entry = pickScoped(body.entries ?? [], site.id);
-  if (!entry?.uid) throw new Error("Account page is missing");
-  return entry;
 }
 
 function addressOf(prefix: "ship" | "bill", record: StoredOrder): CheckoutAddress | undefined {
@@ -210,38 +155,12 @@ function storedOrder(order: PlacedOrder, siteKey: string): StoredOrder | null {
   };
 }
 
-async function saveOrders(entry: AccountEntry, orders: StoredOrder[]) {
-  const next = editable(entry);
-  next.orders = orders;
-  await management(`/v3/content_types/account_page/entries/${entry.uid}`, {
-    method: "PUT",
-    body: JSON.stringify({ entry: next }),
-  });
-  const environment = process.env.CONTENTSTACK_ENVIRONMENT || "my";
-  await management(`/v3/content_types/account_page/entries/${entry.uid}/publish`, {
-    method: "POST",
-    body: JSON.stringify({ entry: { environments: [environment], locales: ["en-us"] }, locale: "en-us" }),
-  });
-}
-
-export async function saveOrder(site: Pick<StoreSite, "id" | "key">, order: PlacedOrder): Promise<PlacedOrder | null> {
+export async function saveOrder(site: { key: string }, order: PlacedOrder): Promise<PlacedOrder | null> {
   if (!site.key) return null;
   const stored = storedOrder(order, site.key);
-  if (!stored) return null;
-  const entry = await accountRecord(site);
-  const orders = entry.orders ?? [];
-  if (orders.some((item) => item.order_number === stored.order_number && item.order_site === site.key)) return orderOf(stored);
-  await saveOrders(entry, [...orders, stored]);
-  return orderOf(stored);
+  return stored ? orderOf(stored) : null;
 }
 
-export async function ordersForShopper(site: Pick<StoreSite, "id" | "key">, emailInput: string): Promise<PlacedOrder[]> {
-  const email = emailInput.trim().toLowerCase();
-  if (!site.key || !email) return [];
-  const entry = await accountRecord(site);
-  return (entry.orders ?? []).flatMap((record) => {
-    if (record.order_email !== email || record.order_site !== site.key) return [];
-    const order = orderOf(record);
-    return order ? [order] : [];
-  }).reverse();
+export async function ordersForShopper(): Promise<PlacedOrder[]> {
+  return [];
 }
