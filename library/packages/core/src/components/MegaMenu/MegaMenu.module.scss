@@ -87,6 +87,8 @@
 }
 
 .viewAll {
+  grid-column: 1 / -1;
+  justify-self: start;
   display: inline-flex;
   align-items: center;
   min-height: 44px;
@@ -102,7 +104,8 @@
 .features {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: flex-start;
+  align-items: flex-start;
   gap: var(--spacing-md);
   max-width: 100%;
 }

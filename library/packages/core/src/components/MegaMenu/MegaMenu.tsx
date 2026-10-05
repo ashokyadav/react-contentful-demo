@@ -132,9 +132,7 @@ export function MegaMenu({
                   </ul>
                 </div>
               ))}
-              <div>
-                <LinkTag href={openItem.href} className={s.viewAll}>All {openItem.label}</LinkTag>
-              </div>
+              <LinkTag href={openItem.href} className={s.viewAll}>All {openItem.label}</LinkTag>
             </div>
             {openItem.features && openItem.features.length > 0 && (
               <div className={s.features}>

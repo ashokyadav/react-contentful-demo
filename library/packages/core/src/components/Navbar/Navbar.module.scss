@@ -38,8 +38,8 @@
   text-align: center;
 }
 .navRow {
-  display: flex;
-  justify-content: center;
+  display: block;
+  width: 100%;
   padding-bottom: var(--spacing-xs);
 }
 .menu { display: none; }
