@@ -1,4 +1,5 @@
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { IconClose } from "@myproject/icons";
 import { toneIcon } from "../Alert/Alert";
 import { cx } from "../../utils/cx";
@@ -27,6 +28,8 @@ export function useToast() {
 
 export function ToastProvider({ children, label = "Notifications" }: { children: React.ReactNode; label?: string }) {
   const [toasts, setToasts] = React.useState<ToastRecord[]>([]);
+  const [mounted, setMounted] = React.useState(false);
+  const regionRef = React.useRef<HTMLElement>(null);
   const nextId = React.useRef(1);
   const dismiss = React.useCallback((id: number) => setToasts((t) => t.filter((x) => x.id !== id)), []);
   const show = React.useCallback((opts: ToastOptions) => {
@@ -36,17 +39,54 @@ export function ToastProvider({ children, label = "Notifications" }: { children:
   }, []);
   const api = React.useMemo(() => ({ show, dismiss }), [show, dismiss]);
 
+  React.useEffect(() => setMounted(true), []);
+
+  React.useLayoutEffect(() => {
+    const region = regionRef.current;
+    if (!region) return;
+    const fit = () => {
+      region.style.bottom = "";
+      region.style.maxHeight = "";
+      const viewport = window.visualViewport;
+      const viewTop = viewport?.offsetTop ?? 0;
+      const viewHeight = viewport?.height ?? window.innerHeight;
+      const margin = 16;
+      const limit = viewTop + viewHeight - margin;
+      let rect = region.getBoundingClientRect();
+      if (rect.bottom > limit) {
+        const current = Number.parseFloat(window.getComputedStyle(region).bottom) || 0;
+        region.style.bottom = `${current + rect.bottom - limit}px`;
+        rect = region.getBoundingClientRect();
+      }
+      if (rect.top < viewTop + margin) region.style.maxHeight = `${Math.max(0, viewHeight - margin * 2)}px`;
+    };
+    fit();
+    const viewport = window.visualViewport;
+    viewport?.addEventListener("resize", fit);
+    viewport?.addEventListener("scroll", fit);
+    window.addEventListener("resize", fit);
+    return () => {
+      viewport?.removeEventListener("resize", fit);
+      viewport?.removeEventListener("scroll", fit);
+      window.removeEventListener("resize", fit);
+    };
+  }, [toasts, mounted]);
+
+  const region = (
+    <section ref={regionRef} aria-label={label} className={s.region}>
+      <div aria-live="polite" aria-relevant="additions">
+        <ol className={s.list}>
+          {toasts.map((t) => <ToastItem key={t.id} toast={t} onDismiss={() => dismiss(t.id)} />)}
+        </ol>
+      </div>
+    </section>
+  );
+
   return (
     <ToastContext.Provider value={api}>
       {children}
-      {/* The region exists before any toast so screen readers reliably announce additions. */}
-      <section aria-label={label} className={s.region}>
-        <div aria-live="polite" aria-relevant="additions">
-          <ol className={s.list}>
-            {toasts.map((t) => <ToastItem key={t.id} toast={t} onDismiss={() => dismiss(t.id)} />)}
-          </ol>
-        </div>
-      </section>
+      {/* Portal to the document so a transformed parent cannot park the toast off screen. */}
+      {mounted ? createPortal(region, document.body) : region}
     </ToastContext.Provider>
   );
 }
