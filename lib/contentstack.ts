@@ -912,6 +912,33 @@ export async function getCategoryPage(urlPath: string, scopeOrPreview?: StoreSco
   return catalog;
 }
 
+export type StoreSearchHit = { value: string; label: string; description: string };
+
+export async function searchStore(term: string, scopeOrPreview?: StoreScope | string): Promise<StoreSearchHit[]> {
+  const query = term.trim().toLowerCase();
+  if (query.length < 2) return [];
+  const scope = asScope(scopeOrPreview);
+  const siteUid = scope.siteUid || "";
+  const [products, categories] = await Promise.all([
+    entriesOf<CsProduct>("product", scope),
+    entriesOf<CsCategoryPage>("category_page", scope),
+  ]);
+  const hits: StoreSearchHit[] = [];
+  for (const entry of products) {
+    if (!entryMatchesSite(entry.sites, siteUid)) continue;
+    const product = productOf(entry);
+    if (!product) continue;
+    if (!`${product.title} ${product.alt}`.toLowerCase().includes(query)) continue;
+    hits.push({ value: product.href, label: product.title, description: product.alt });
+  }
+  for (const entry of categories) {
+    if (!entryMatchesSite(entry.sites, siteUid) || !entry.title || !entry.url) continue;
+    if (!`${entry.title} ${entry.lede || ""}`.toLowerCase().includes(query)) continue;
+    hits.push({ value: entry.url.split("?")[0], label: entry.title, description: entry.lede || "" });
+  }
+  return hits.slice(0, 8);
+}
+
 export async function getProductPage(slug: string, scopeOrPreview?: StoreScope | string): Promise<{ product: StoreProduct; department: string; crumbs: { label: string; href?: string }[] } | null> {
   const scope = asScope(scopeOrPreview);
   const productBody = await delivery<{ entries?: CsProduct[] }>("/v3/content_types/product/entries", {

@@ -1,8 +1,9 @@
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/router";
 import {
   AccountMenu,
   Autocomplete,
+  type AutocompleteOption,
   Badge,
   Button,
   Container,
@@ -56,6 +57,60 @@ function PromoTicker({ offers, previousLabel, nextLabel }: { offers: { label: st
         <IconChevronRight size="sm" />
       </button>
     </div>
+  );
+}
+
+function StoreSearch({
+  label,
+  placeholder,
+  fieldClassName,
+  onPick,
+}: {
+  label: string;
+  placeholder: string;
+  fieldClassName?: string;
+  onPick?: () => void;
+}) {
+  const site = useSite();
+  const router = useRouter();
+  const [options, setOptions] = useState<AutocompleteOption[]>([]);
+  const request = useRef(0);
+
+  const onInputChange = (query: string) => {
+    const id = ++request.current;
+    const params = new URLSearchParams();
+    if (site.key) params.set("site", site.key);
+    if (site.locale) params.set("locale", site.locale);
+    params.set("q", query);
+    window.setTimeout(() => {
+      if (id !== request.current) return;
+      fetch(`/api/search?${params.toString()}`)
+        .then((response) => response.json())
+        .then((body: { results?: AutocompleteOption[] }) => {
+          if (id !== request.current) return;
+          setOptions(Array.isArray(body.results) ? body.results : []);
+        })
+        .catch(() => {
+          if (id === request.current) setOptions([]);
+        });
+    }, 200);
+  };
+
+  return (
+    <Autocomplete
+      hideLabel
+      label={label}
+      placeholder={placeholder}
+      fieldClassName={fieldClassName}
+      options={options}
+      filter={() => true}
+      onInputChange={onInputChange}
+      onChange={(option) => {
+        if (!option?.value) return;
+        onPick?.();
+        router.push(hrefWithLocale(option.value, site.key, site.locale));
+      }}
+    />
   );
 }
 
@@ -127,22 +182,10 @@ export function SiteFrame({ children, current = "", showBanner = true }: { child
             </span>
           ) : undefined}
           start={(
-            <form
-              className={styles.search}
-              onSubmit={(event) => {
-                event.preventDefault();
-                setSearch(true);
-              }}
-            >
+            <div className={styles.search}>
               <IconSearch size="sm" />
-              <TextInput
-                hideLabel
-                label={chrome.searchLabel}
-                placeholder={chrome.placeholder}
-                fieldClassName={styles.searchField}
-                className={styles.searchInput}
-              />
-            </form>
+              <StoreSearch label={chrome.searchLabel} placeholder={chrome.placeholder} fieldClassName={styles.searchField} />
+            </div>
           )}
           menu={(
             <MobileMenu
@@ -245,7 +288,7 @@ export function SiteFrame({ children, current = "", showBanner = true }: { child
         </Container>
       </Footer>
       <Modal open={search} onClose={() => setSearch(false)} title={chrome.searchTitle} size="sm">
-        <Autocomplete label={chrome.searchLabel} placeholder={chrome.placeholder} options={chrome.suggestions} />
+        <StoreSearch label={chrome.searchLabel} placeholder={chrome.placeholder} onPick={() => setSearch(false)} />
       </Modal>
     </>
   );
