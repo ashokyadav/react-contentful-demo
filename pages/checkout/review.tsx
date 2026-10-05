@@ -14,7 +14,7 @@ import { IconBag } from "@myproject/icons";
 import { useCart } from "../../components/CartStore";
 import { useFooter } from "../../components/FooterContent";
 import { useSite } from "../../components/SiteContext";
-import { checkoutStepsFor, fill, getCheckout, getSite, type StoreCheckout } from "../../lib/contentstack";
+import { checkoutStepsFor, fill, getCheckout, getSite, withScope, type StoreCheckout } from "../../lib/contentstack";
 import { placeOrder, readCheckout, writeOrder, type CheckoutAddress, type CheckoutDraft } from "../../lib/checkoutDraft";
 import { persistScope, scopeFor, scopeFrom } from "../../lib/scope";
 import styles from "../../styles/shipping.module.scss";
@@ -38,6 +38,7 @@ export default function ReviewPage({ checkout }: { checkout: StoreCheckout }) {
   const { lines, clear } = useCart();
   const footer = useFooter();
   const site = useSite();
+  const scoped = (href: string) => withScope(href, { site: site.key, locale: site.locale });
   const [draft, setDraft] = useState<CheckoutDraft>({});
   const [placing, setPlacing] = useState(false);
   const [saveFailed, setSaveFailed] = useState(false);
@@ -57,9 +58,9 @@ export default function ReviewPage({ checkout }: { checkout: StoreCheckout }) {
       <PageMeta title={checkout.reviewTitle} description={checkout.reviewAlertBody} site={site.name} />
       <div className={styles.shell}>
         <header className={styles.header}>
-          <a href="/" className={styles.wordmark}>{site.name}</a>
-          <Stepper current={2} steps={checkoutStepsFor(checkout, 2)} />
-          <a href="/cart" className={styles.back}>{checkout.backToBag} <IconBag size="sm" /></a>
+          <a href={scoped("/")} className={styles.wordmark}>{site.name}</a>
+          <Stepper current={2} steps={checkoutStepsFor(checkout, 2).map((step) => (step.href ? { ...step, href: scoped(step.href) } : step))} />
+          <a href={scoped("/cart")} className={styles.back}>{checkout.backToBag} <IconBag size="sm" /></a>
         </header>
 
         <main id="main" className={styles.main}>
@@ -103,11 +104,11 @@ export default function ReviewPage({ checkout }: { checkout: StoreCheckout }) {
               <h2 id="items-heading">{fill(checkout.itemsHeading, { count })}</h2>
               {lines.length > 0 ? lines.map((line) => (
                 <article key={`${line.id}:${line.color ?? ""}`} className={styles.line}>
-                  <a href={line.href} className={styles.thumb}>
+                  <a href={scoped(line.href)} className={styles.thumb}>
                     <Image src={line.image} alt={line.alt} aspectRatio="3/4" />
                   </a>
                   <div>
-                    <h3><a href={line.href}>{line.title}</a></h3>
+                    <h3><a href={scoped(line.href)}>{line.title}</a></h3>
                     <Price value={line.price} compareAt={line.compareAt} />
                     <p className={styles.meta}>{fill(checkout.qty, { count: line.quantity })}</p>
                     <p className={styles.stock}>{checkout.inStock}</p>
@@ -170,7 +171,7 @@ export default function ReviewPage({ checkout }: { checkout: StoreCheckout }) {
                   }
                   writeOrder(result.order);
                   clear();
-                  router.push("/checkout/confirmation");
+                  router.push(scoped("/checkout/confirmation"));
                 }}
               >
                 {checkout.placeOrder}

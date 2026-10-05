@@ -17,7 +17,7 @@ import { useCart } from "../../components/CartStore";
 import { PayPalButton } from "../../components/PayPalButton";
 import { useFooter } from "../../components/FooterContent";
 import { useSite } from "../../components/SiteContext";
-import { checkoutStepsFor, getCheckout, getSite, type StoreCheckout } from "../../lib/contentstack";
+import { checkoutStepsFor, getCheckout, getSite, withScope, type StoreCheckout } from "../../lib/contentstack";
 import { readCheckout, writeCheckout, type CheckoutAddress } from "../../lib/checkoutDraft";
 import { persistScope, scopeFor, scopeFrom } from "../../lib/scope";
 import styles from "../../styles/shipping.module.scss";
@@ -33,6 +33,7 @@ export default function BillingPage({ checkout }: { checkout: StoreCheckout }) {
   const { lines } = useCart();
   const footer = useFooter();
   const site = useSite();
+  const scoped = (href: string) => withScope(href, { site: site.key, locale: site.locale });
   const [pay, setPay] = useState(checkout.payments[0]?.id || "");
   const [email, setEmail] = useState("");
   const [cardName, setCardName] = useState("");
@@ -88,16 +89,16 @@ export default function BillingPage({ checkout }: { checkout: StoreCheckout }) {
       <PageMeta title={checkout.steps[1]?.label || ""} description={checkout.signInPrompt} site={site.name} />
       <div className={styles.shell}>
         <header className={styles.header}>
-          <a href="/" className={styles.wordmark}>{site.name}</a>
-          <Stepper current={1} steps={checkoutStepsFor(checkout, 1)} />
-          <a href="/cart" className={styles.back}>{checkout.backToBag} <IconBag size="sm" /></a>
+          <a href={scoped("/")} className={styles.wordmark}>{site.name}</a>
+          <Stepper current={1} steps={checkoutStepsFor(checkout, 1).map((step) => (step.href ? { ...step, href: scoped(step.href) } : step))} />
+          <a href={scoped("/cart")} className={styles.back}>{checkout.backToBag} <IconBag size="sm" /></a>
         </header>
 
         <main id="main" className={styles.main}>
           <div>
             <p className={styles.signIn}>
               {`${checkout.signInPrompt} `}
-              <Button variant="tertiary" onClick={() => router.push("/account")}>{checkout.signIn}</Button>
+              <Button variant="tertiary" onClick={() => router.push(scoped("/account"))}>{checkout.signIn}</Button>
             </p>
 
             <h1 className="visually-hidden">{checkout.steps[1]?.label}</h1>
@@ -152,7 +153,7 @@ export default function BillingPage({ checkout }: { checkout: StoreCheckout }) {
                         billing: billingAddress(),
                         ...(approval.address ? { address: approval.address } : {}),
                       });
-                      router.push("/checkout/review");
+                      router.push(scoped("/checkout/review"));
                     }}
                     onError={() => show({ message: checkout.paypalNote })}
                   />
@@ -206,7 +207,7 @@ export default function BillingPage({ checkout }: { checkout: StoreCheckout }) {
                     billingSame: same,
                     billing: billingAddress(),
                   });
-                  router.push("/checkout/review");
+                  router.push(scoped("/checkout/review"));
                 }}
               >
                 {checkout.continueReview}

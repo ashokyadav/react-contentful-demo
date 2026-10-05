@@ -18,19 +18,20 @@ import { PageMeta } from "../components/PageMeta";
 import { SiteFrame } from "../components/SiteFrame";
 import { useSite } from "../components/SiteContext";
 import { useNavigationMenu } from "../components/NavigationMenu";
-import { emptyHome, getHomePage, getHomePanels, getSite, type StoreHome } from "../lib/contentstack";
+import { emptyHome, getHomePage, getHomePanels, getSite, withScope, type StoreHome } from "../lib/contentstack";
 import { persistScope, scopeFor, scopeFrom } from "../lib/scope";
 import styles from "../styles/home.module.scss";
 
-function go(router: ReturnType<typeof useRouter>, href: string) {
+function go(router: ReturnType<typeof useRouter>, href: string, scope: { site?: string; locale?: string }) {
   if (href.startsWith("#")) {
     document.querySelector(href)?.scrollIntoView();
     return;
   }
-  router.push(href);
+  router.push(withScope(href, scope));
 }
 
 function CategoryShortcuts() {
+  const site = useSite();
   const { items, label } = useNavigationMenu();
   if (!items.length) return null;
   return (
@@ -40,7 +41,7 @@ function CategoryShortcuts() {
           const image = item.features?.find((feature) => feature.imageSrc);
           return (
             <li key={item.id}>
-              <a href={item.href}>
+              <a href={withScope(item.href, { site: site.key, locale: site.locale })}>
                 {image ? <Image src={image.imageSrc} alt={image.imageAlt} fit="cover" /> : null}
                 <span>{item.label}</span>
               </a>
@@ -138,7 +139,7 @@ export default function HomePage({
   const router = useRouter();
   const site = useSite();
   const [promo, setPromo] = useState(false);
-  const open = (href: string) => go(router, href);
+  const open = (href: string) => go(router, href, { site: site.key, locale: site.locale });
   const description = home.hero?.note || home.arrivals?.text || home.feature?.text || home.heritage?.text || "";
 
   return (

@@ -5,7 +5,7 @@ import { useCart } from "../../components/CartStore";
 import { PageMeta } from "../../components/PageMeta";
 import { SiteFrame } from "../../components/SiteFrame";
 import { useSite } from "../../components/SiteContext";
-import { getProductPage, getSite, type StoreProduct } from "../../lib/contentstack";
+import { getProductPage, getSite, withScope, type StoreProduct } from "../../lib/contentstack";
 import { persistScope, scopeFor, scopeFrom } from "../../lib/scope";
 import styles from "../../styles/home.module.scss";
 
@@ -33,7 +33,7 @@ export default function ProductPage({ product, department, crumbs, color }: Prod
     const added = addItem({
       id: product.id,
       title: product.title,
-      href: product.href,
+      href: withScope(product.href, { site: site.key, locale: site.locale }),
       image: chosen?.image || product.image,
       alt: chosen?.alt || product.alt,
       price: product.price,
@@ -47,7 +47,7 @@ export default function ProductPage({ product, department, crumbs, color }: Prod
     show({
       tone: "success",
       message: `Added ${added} ${product.title} to your bag.`,
-      action: { label: "View bag", onClick: () => router.push("/cart") },
+      action: { label: "View bag", onClick: () => router.push(withScope("/cart", { site: site.key, locale: site.locale })) },
     });
   };
 

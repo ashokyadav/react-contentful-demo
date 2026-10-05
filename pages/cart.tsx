@@ -18,7 +18,7 @@ import {
 import { cartKey, useCart, type CartLine } from "../components/CartStore";
 import { PayPalButton } from "../components/PayPalButton";
 import { SiteFrame } from "../components/SiteFrame";
-import { fill, getCartPage, getSite, type StoreCart } from "../lib/contentstack";
+import { fill, getCartPage, getSite, withScope, type StoreCart } from "../lib/contentstack";
 import { writeCheckout } from "../lib/checkoutDraft";
 import { persistScope, scopeFor, scopeFrom } from "../lib/scope";
 import styles from "../styles/cart.module.scss";
@@ -96,6 +96,7 @@ function BagLine({
 export default function CartPage({ page }: { page: StoreCart }) {
   const router = useRouter();
   const site = useSite();
+  const scoped = (href: string) => withScope(href, { site: site.key, locale: site.locale });
   const { show } = useToast();
   const { lines, saved, updateQuantity, setDelivery, remove, saveForLater, moveToBag } = useCart();
   const [code, setCode] = useState("");
@@ -147,10 +148,10 @@ export default function CartPage({ page }: { page: StoreCart }) {
                       <BagLine
                         key={key}
                         page={page}
-                        line={line}
+                        line={{ ...line, href: scoped(line.href) }}
                         onQuantity={(quantity) => updateQuantity(key, quantity)}
                         onDelivery={(delivery) => setDelivery(key, delivery)}
-                        onEdit={() => router.push(line.href)}
+                        onEdit={() => router.push(scoped(line.href))}
                         onRemove={() => remove(key)}
                         onWishlist={() => {
                           remove(key);
@@ -164,7 +165,7 @@ export default function CartPage({ page }: { page: StoreCart }) {
               ) : (
                 <div className={styles.empty}>
                   <p>{page.empty}</p>
-                  <Button onClick={() => router.push(page.continueHref)}>{page.continueShopping}</Button>
+                  <Button onClick={() => router.push(scoped(page.continueHref))}>{page.continueShopping}</Button>
                 </div>
               )}
 
@@ -178,9 +179,9 @@ export default function CartPage({ page }: { page: StoreCart }) {
                         <BagLine
                           key={key}
                           page={page}
-                          line={line}
+                          line={{ ...line, href: scoped(line.href) }}
                           onQuantity={() => undefined}
-                          onEdit={() => router.push(line.href)}
+                          onEdit={() => router.push(scoped(line.href))}
                           onRemove={() => remove(key)}
                           onSave={() => moveToBag(key)}
                           saveLabel={page.moveToBag}
@@ -229,7 +230,7 @@ export default function CartPage({ page }: { page: StoreCart }) {
                 ]}
               />
               <div className={styles.pay}>
-                <Button fullWidth disabled={count === 0} onClick={() => router.push("/checkout/shipping")}>{page.checkout}</Button>
+                <Button fullWidth disabled={count === 0} onClick={() => router.push(scoped("/checkout/shipping"))}>{page.checkout}</Button>
                 {count > 0 && total > 0 ? (
                   <PayPalButton
                     amount={total.toFixed(2)}
@@ -240,7 +241,7 @@ export default function CartPage({ page }: { page: StoreCart }) {
                         email: approval.email,
                         ...(approval.address ? { address: approval.address } : {}),
                       });
-                      router.push(approval.address ? "/checkout/review" : "/checkout/shipping");
+                      router.push(scoped(approval.address ? "/checkout/review" : "/checkout/shipping"));
                     }}
                     onError={() => show({ message: page.paypalNote })}
                   />

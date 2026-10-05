@@ -236,7 +236,7 @@ export function SiteFrame({ children, current = "", showBanner = true }: { child
                   onSelect={openAccount}
                 />
               </span>
-              <a href="/cart" className={`${styles.iconButton} ${styles.bagButton}`}>
+              <a href={hrefWithLocale("/cart", site.key, site.locale)} className={`${styles.iconButton} ${styles.bagButton}`}>
                 <IconBag />
                 {count > 0 && <Badge count={count} className={styles.bagCount} />}
                 <span className="visually-hidden">{bagLabel}</span>

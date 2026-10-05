@@ -819,6 +819,21 @@ function productOf(entry: CsProduct): StoreProduct | null {
   };
 }
 
+export function withScope(href: string, scope: StoreScope) {
+  if (/^(https?:|mailto:|tel:)/.test(href)) return href;
+  const [path, hash = ""] = href.split("#");
+  const [pathname, search = ""] = path.split("?");
+  const params = new URLSearchParams(search);
+  if (scope.site) params.set("site", scope.site);
+  if (scope.locale) params.set("locale", scope.locale);
+  const query = params.toString();
+  return `${pathname || "/"}${query ? `?${query}` : ""}${hash ? `#${hash}` : ""}`;
+}
+
+function scopeCrumb(crumb: { label: string; href?: string }, scope: StoreScope) {
+  return crumb.href ? { ...crumb, href: withScope(crumb.href, scope) } : crumb;
+}
+
 function catalogOf(entry: CsCategoryPage, siteUid = ""): StoreCatalog | null {
   if (!entry.title || !entry.url) return null;
   const categories = (entry.categories ?? []).flatMap((category) => {
@@ -913,7 +928,24 @@ export async function getCategoryPage(urlPath: string, scopeOrPreview?: StoreSco
     return product ? [[product.id, product] as const] : [];
   }));
   catalog.products = catalog.products.map((product) => full.get(product.id) || product);
+  catalog.crumbs = catalog.crumbs.map((crumb) => scopeCrumb(crumb, scope));
   return catalog;
+}
+
+async function categoryCatalogs(scope: StoreScope, locale = scope.locale) {
+  const pagesBody = await delivery<{ entries?: CsCategoryPage[] }>("/v3/content_types/category_page/entries", {
+    include: ["products", "products.sites"],
+    locale,
+  });
+  return (pagesBody.entries ?? []).flatMap((entry) => {
+    const catalog = catalogOf(entry, scope.siteUid || "");
+    return catalog ? [catalog] : [];
+  });
+}
+
+function listingFor(catalogs: StoreCatalog[], product: StoreProduct) {
+  const matches = catalogs.filter((catalog) => catalog.products.some((item) => item.id === product.id));
+  return matches.find((catalog) => catalog.categories.some((category) => category.id === product.category)) || matches[0];
 }
 
 export type StoreSearchHit = { value: string; label: string; description: string };
@@ -953,21 +985,19 @@ export async function getProductPage(slug: string, scopeOrPreview?: StoreScope |
   const product = productOf(productEntry ?? {});
   if (!product) return null;
 
-  const pagesBody = await delivery<{ entries?: CsCategoryPage[] }>("/v3/content_types/category_page/entries", {
-    include: ["products", "products.sites"],
-    locale: scope.locale,
-  });
-  const catalogs = (pagesBody.entries ?? []).flatMap((entry) => {
-    const catalog = catalogOf(entry, scope.siteUid || "");
-    return catalog ? [catalog] : [];
-  });
-  const matches = catalogs.filter((catalog) => catalog.products.some((item) => item.id === product.id));
-  const listing = matches.find((catalog) => catalog.categories.some((category) => category.id === product.category)) || matches[0];
+  const catalogs = await categoryCatalogs(scope);
+  let listing = listingFor(catalogs, product);
+  if (!listing && scope.locale && scope.locale !== "en-us") {
+    const english = listingFor(await categoryCatalogs(scope, "en-us"), product);
+    if (english) listing = catalogs.find((catalog) => catalog.url === english.url) || english;
+  }
   const category = listing?.categories.find((item) => item.id === product.category && item.id !== "all");
-  const home = listing?.crumbs.find((crumb) => crumb.href === "/") || { label: "Home", href: "/" };
+  const home = [...(listing ? [listing] : []), ...catalogs]
+    .flatMap((catalog) => catalog.crumbs)
+    .find((crumb) => crumb.href?.split("?")[0] === "/");
   const crumbs = [
-    home,
-    ...(category ? [{ label: category.label, ...(category.href ? { href: category.href } : {}) }] : []),
+    ...(home ? [scopeCrumb(home, scope)] : []),
+    ...(category ? [scopeCrumb({ label: category.label, ...(category.href ? { href: category.href } : {}) }, scope)] : []),
     { label: product.title },
   ];
   return { product, department: listing?.department || "", crumbs };

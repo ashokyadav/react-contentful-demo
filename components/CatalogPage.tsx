@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { Badge, Breadcrumbs, Button, Card, Container, Grid, Image, Pagination, Price, Select, SwatchPicker } from "@myproject/core";
 import type { StoreCatalog, StoreProduct } from "../lib/contentstack";
-import { fill } from "../lib/contentstack";
+import { fill, withScope } from "../lib/contentstack";
 import { PageMeta } from "./PageMeta";
 import { useSite } from "./SiteContext";
 import { SiteFrame } from "./SiteFrame";
@@ -23,13 +23,14 @@ function withColor(href: string, color: string) {
 }
 
 function ProductCard({ product }: { product: StoreProduct }) {
+  const site = useSite();
   const [color, setColor] = useState(product.swatches[0]?.value || "");
   const selected = product.swatches.some((swatch) => swatch.value === color) ? color : product.swatches[0]?.value || "";
   const chosen = product.swatches.find((swatch) => swatch.value === selected);
   return (
     <Card
       className={styles.product}
-      href={withColor(product.href, selected)}
+      href={withScope(withColor(product.href, selected), { site: site.key, locale: site.locale })}
       title={product.title}
       media={(
         <div className={styles.media}>
@@ -70,8 +71,18 @@ export function CatalogPage({ catalog }: { catalog: StoreCatalog }) {
 
   const selectCategory = (id: string) => {
     setPage(1);
-    const query = id === "all" ? {} : { category: id };
-    router.push({ pathname: catalog.url, query }, undefined, { shallow: true });
+    const slug = typeof router.query.slug === "string" ? router.query.slug : catalog.url.split("/").filter(Boolean).pop() || "";
+    const query: Record<string, string> = {};
+    if (slug) query.slug = slug;
+    if (site.key) query.site = site.key;
+    if (site.locale) query.locale = site.locale;
+    if (id !== "all") query.category = id;
+    const params = new URLSearchParams();
+    if (site.key) params.set("site", site.key);
+    if (site.locale) params.set("locale", site.locale);
+    if (id !== "all") params.set("category", id);
+    const asPath = `${catalog.url}${params.toString() ? `?${params}` : ""}`;
+    router.push({ pathname: router.pathname, query }, asPath, { shallow: true });
   };
 
   return (
@@ -128,7 +139,7 @@ export function CatalogPage({ catalog }: { catalog: StoreCatalog }) {
                 <p>{catalog.promo.eyebrow}</p>
                 <h2>{catalog.promo.title}</h2>
                 <p className={styles.promoOffer}>{catalog.promo.offer}</p>
-                <Button variant="secondary" onClick={() => router.push(catalog.promo.href)}>{catalog.promo.action}</Button>
+                <Button variant="secondary" onClick={() => router.push(withScope(catalog.promo.href, { site: site.key, locale: site.locale }))}>{catalog.promo.action}</Button>
               </article>
             )}
             {visible.slice(promoAt).map((product) => (

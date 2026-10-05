@@ -19,7 +19,7 @@ import { useCart } from "../../components/CartStore";
 import { PayPalButton } from "../../components/PayPalButton";
 import { useFooter } from "../../components/FooterContent";
 import { useSite } from "../../components/SiteContext";
-import { checkoutStepsFor, fill, getCheckout, getSite, type StoreCheckout } from "../../lib/contentstack";
+import { checkoutStepsFor, fill, getCheckout, getSite, withScope, type StoreCheckout } from "../../lib/contentstack";
 import { readCheckout, writeCheckout } from "../../lib/checkoutDraft";
 import { persistScope, scopeFor, scopeFrom } from "../../lib/scope";
 import styles from "../../styles/shipping.module.scss";
@@ -40,6 +40,7 @@ export default function ShippingPage({ checkout }: { checkout: StoreCheckout }) 
   const { lines } = useCart();
   const footer = useFooter();
   const site = useSite();
+  const scoped = (href: string) => withScope(href, { site: site.key, locale: site.locale });
   const count = lines.reduce((sum, line) => sum + line.quantity, 0);
   const subtotal = lines.reduce((sum, line) => sum + line.price * line.quantity, 0);
   const shipping = checkout.methods.find((option) => option.id === method) ?? checkout.methods[0];
@@ -72,16 +73,16 @@ export default function ShippingPage({ checkout }: { checkout: StoreCheckout }) 
       <PageMeta title={checkout.steps[0]?.label || ""} description={checkout.help} site={site.name} />
       <div className={styles.shell}>
         <header className={styles.header}>
-          <a href="/" className={styles.wordmark}>{site.name}</a>
-          <Stepper current={0} steps={checkoutStepsFor(checkout, 0)} />
-          <a href="/cart" className={styles.back}>{checkout.backToBag} <IconBag size="sm" /></a>
+          <a href={scoped("/")} className={styles.wordmark}>{site.name}</a>
+          <Stepper current={0} steps={checkoutStepsFor(checkout, 0).map((step) => (step.href ? { ...step, href: scoped(step.href) } : step))} />
+          <a href={scoped("/cart")} className={styles.back}>{checkout.backToBag} <IconBag size="sm" /></a>
         </header>
 
         <main id="main" className={styles.main}>
           <div>
             <p className={styles.signIn}>
               {`${checkout.signInPrompt} `}
-              <Button variant="tertiary" onClick={() => router.push("/account")}>{checkout.signIn}</Button>
+              <Button variant="tertiary" onClick={() => router.push(scoped("/account"))}>{checkout.signIn}</Button>
             </p>
 
             <h1 className="visually-hidden">{checkout.steps[0]?.label}</h1>
@@ -115,7 +116,7 @@ export default function ShippingPage({ checkout }: { checkout: StoreCheckout }) 
                       giftMessage,
                       ...(next ? { address: next } : {}),
                     });
-                    if (next) router.push("/checkout/review");
+                    if (next) router.push(scoped("/checkout/review"));
                     else show({ message: checkout.paypalNote });
                   }}
                   onError={() => show({ message: checkout.paypalNote })}
@@ -181,11 +182,11 @@ export default function ShippingPage({ checkout }: { checkout: StoreCheckout }) 
                 <h2 id="items-heading">{fill(checkout.itemsHeading, { count })}</h2>
                 {lines.length > 0 ? lines.map((line) => (
                   <article key={`${line.id}:${line.color ?? ""}`} className={styles.line}>
-                    <a href={line.href} className={styles.thumb}>
+                    <a href={scoped(line.href)} className={styles.thumb}>
                       <Image src={line.image} alt={line.alt} aspectRatio="3/4" />
                     </a>
                     <div>
-                      <h3><a href={line.href}>{line.title}</a></h3>
+                      <h3><a href={scoped(line.href)}>{line.title}</a></h3>
                       <Price value={line.price} compareAt={line.compareAt} />
                     <p className={styles.meta}>{fill(checkout.qty, { count: line.quantity })}</p>
                     <p className={styles.stock}>{checkout.inStock}</p>
@@ -216,7 +217,7 @@ export default function ShippingPage({ checkout }: { checkout: StoreCheckout }) 
                     giftNote,
                     giftMessage,
                   });
-                  router.push("/checkout/billing");
+                  router.push(scoped("/checkout/billing"));
                 }}
               >
                 {checkout.continueBilling}

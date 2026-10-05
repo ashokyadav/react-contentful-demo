@@ -3,7 +3,7 @@ import { PageMeta } from "../../components/PageMeta";
 import { Alert, Button, Image, List, ListItem, Price } from "@myproject/core";
 import { useFooter } from "../../components/FooterContent";
 import { useSite } from "../../components/SiteContext";
-import { fill, getCheckout, getSite, type StoreCheckout } from "../../lib/contentstack";
+import { fill, getCheckout, getSite, withScope, type StoreCheckout } from "../../lib/contentstack";
 import { readOrder, type CheckoutAddress, type PlacedOrder } from "../../lib/checkoutDraft";
 import { persistScope, scopeFor, scopeFrom } from "../../lib/scope";
 import styles from "../../styles/shipping.module.scss";
@@ -25,6 +25,7 @@ function formatAddress(address: CheckoutAddress, checkout: StoreCheckout) {
 export default function ConfirmationPage({ checkout }: { checkout: StoreCheckout }) {
   const footer = useFooter();
   const site = useSite();
+  const scoped = (href: string) => withScope(href, { site: site.key, locale: site.locale });
   const [order, setOrder] = useState<PlacedOrder | null>(null);
   const [ready, setReady] = useState(false);
 
@@ -43,9 +44,9 @@ export default function ConfirmationPage({ checkout }: { checkout: StoreCheckout
       <PageMeta title={checkout.confirmationTitle} description={order ? fill(checkout.confirmedBody, { email: order.email }) : checkout.noOrderBody} site={site.name} />
       <div className={styles.shell}>
         <header className={styles.header}>
-          <a href="/" className={styles.wordmark}>{site.name}</a>
+          <a href={scoped("/")} className={styles.wordmark}>{site.name}</a>
           <h1 className={styles.title}>{checkout.thankYou}</h1>
-          <a href="/" className={styles.back}>{checkout.continueShopping}</a>
+          <a href={scoped("/")} className={styles.back}>{checkout.continueShopping}</a>
         </header>
 
         <main id="main" className={styles.main}>
@@ -91,11 +92,11 @@ export default function ConfirmationPage({ checkout }: { checkout: StoreCheckout
                   </div>
                   {order.lines.map((line) => (
                     <article key={`${line.id}:${line.color ?? ""}`} className={styles.line}>
-                      <a href={line.href} className={styles.thumb}>
+                      <a href={scoped(line.href)} className={styles.thumb}>
                         <Image src={line.image} alt={line.alt} aspectRatio="3/4" />
                       </a>
                       <div>
-                        <h3><a href={line.href}>{line.title}</a></h3>
+                        <h3><a href={scoped(line.href)}>{line.title}</a></h3>
                         <Price value={line.price} compareAt={line.compareAt} />
                         {line.color ? <p className={styles.meta}>{line.color}</p> : null}
                         <p className={styles.meta}>{fill(checkout.qty, { count: line.quantity })}</p>
