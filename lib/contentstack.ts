@@ -36,6 +36,12 @@ export function pickScoped<T extends { sites?: SiteRef[] }>(entries: T[], siteUi
   return entries.find((entry) => siteIds(entry.sites).length === 0);
 }
 
+function stackHeaders(apiKey: string, token: string, preview: boolean): Record<string, string> {
+  return preview
+    ? { api_key: apiKey, preview_token: token }
+    : { api_key: apiKey, access_token: token };
+}
+
 function applyScope(url: URL, scope?: StoreScope) {
   const locale = scope?.locale || "en-us";
   url.searchParams.set("locale", locale);
@@ -151,9 +157,7 @@ export async function getMegaMenu(scopeOrPreview?: StoreScope | string): Promise
   const host = preview
     ? process.env.CONTENTSTACK_PREVIEW_HOST || "https://eu-rest-preview.contentstack.com"
     : process.env.CONTENTSTACK_CDN || "https://eu-cdn.contentstack.com";
-  const headers = preview
-    ? { api_key: apiKey, preview_token: previewToken! }
-    : { api_key: apiKey, access_token: deliveryToken };
+  const headers = stackHeaders(apiKey, preview ? previewToken! : deliveryToken, preview);
   const siteUid = scope.siteUid || "";
 
   const load = async (locale?: string) => {
@@ -243,9 +247,7 @@ export async function getFooter(scopeOrPreview?: StoreScope | string): Promise<S
   const host = preview
     ? process.env.CONTENTSTACK_PREVIEW_HOST || "https://eu-rest-preview.contentstack.com"
     : process.env.CONTENTSTACK_CDN || "https://eu-cdn.contentstack.com";
-  const headers = preview
-    ? { api_key: apiKey, preview_token: previewToken! }
-    : { api_key: apiKey, access_token: deliveryToken };
+  const headers = stackHeaders(apiKey, preview ? previewToken! : deliveryToken, preview);
 
   const load = async <T,>(pathname: string, asc?: string): Promise<T> => {
     const url = new URL(pathname, host);
@@ -322,9 +324,7 @@ export async function getHomePanels(scopeOrPreview?: StoreScope | string): Promi
   url.searchParams.set("asc", "rank");
   applyScope(url, scope);
   const response = await fetch(url, {
-    headers: preview
-      ? { api_key: apiKey, preview_token: previewToken! }
-      : { api_key: apiKey, access_token: deliveryToken },
+    headers: stackHeaders(apiKey, preview ? previewToken! : deliveryToken, preview),
     cache: "no-store",
   });
   if (!response.ok) {
@@ -597,9 +597,7 @@ async function entriesOf<T>(contentType: string, scopeOrPreview?: StoreScope | s
   const url = new URL(`/v3/content_types/${contentType}/entries`, host);
   url.searchParams.set("limit", "100");
   applyScope(url, scope);
-  const headers = preview
-    ? { api_key: apiKey, preview_token: previewToken! }
-    : { api_key: apiKey, access_token: deliveryToken };
+  const headers = stackHeaders(apiKey, preview ? previewToken! : deliveryToken, preview);
   let response = await fetch(url, { headers, cache: "no-store" });
   if (!response.ok && scope.locale && scope.locale !== "en-us") {
     url.searchParams.set("locale", "en-us");

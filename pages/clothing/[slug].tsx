@@ -6,7 +6,7 @@ export default function ClothingPage({ catalog }: { catalog: StoreCatalog }) {
   return <CatalogPage catalog={catalog} />;
 }
 
-export async function getServerSideProps(ctx: { params?: { slug?: string } }) {
+export async function getServerSideProps(ctx: Parameters<typeof scopeFrom>[0] & { params?: { slug?: string } }) {
   const slug = ctx.params?.slug;
   if (!slug) return { notFound: true };
   const scope = scopeFrom(ctx);
