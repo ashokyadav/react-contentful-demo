@@ -1,0 +1,126 @@
+/*
+ * library — NA Core theme
+ * Midnight navy, warm paper, sycamore gold, square corners, serif headlines,
+ * and tracked uppercase chrome.
+ * Every text/background pairing below meets WCAG 2.1 AA (4.5:1 text, 3:1 UI).
+ */
+:root {
+  /* Color — base */
+  --color-ink: #001f36;          /* midnight navy */
+  --color-white: #ffffff;
+  --color-gold: #8b733f;         /* sycamore — 4.54:1 on white, UI accent */
+  --color-gold-text: #5c4a22;    /* 8.5:1 on white — small gold text */
+  --color-stone-50: #f7f4ef;     /* warm paper */
+  --color-stone-100: #e8e2d6;
+  --color-stone-300: #c9c0b0;
+  --color-stone-600: #5c564c;    /* 7.2:1 on white */
+  --color-stone-700: #3e3a34;
+  --color-red-600: #9e1b32;      /* 7.8:1 on white */
+  --color-red-50: #fdf2f4;
+  --color-green-700: #1d6b3a;    /* 6.4:1 on white */
+  --color-green-50: #eef7f1;
+  --color-amber-800: #7a4f00;    /* 6.9:1 on white */
+  --color-amber-50: #fff6e5;
+  --color-blue-700: #001f36;     /* midnight, used for info */
+  --color-blue-50: #e8eef3;
+
+  /* Color — semantic */
+  --color-background-primary: var(--color-white);
+  --color-background-secondary: var(--color-stone-50);
+  --color-background-inverse: var(--color-ink);
+  --color-text-primary: var(--color-ink);
+  --color-text-secondary: var(--color-stone-600);
+  --color-text-inverse: var(--color-white);
+  --color-text-accent: var(--color-gold-text);
+  --color-border-subtle: var(--color-stone-100);
+  --color-border-default: #6f685e; /* 5.2:1 — form control boundaries */
+  --color-border-strong: var(--color-ink);
+  --color-border-accent: var(--color-gold);
+  --color-action-primary: var(--color-ink);
+  --color-action-primary-hover: #163552;
+  --color-action-danger: var(--color-red-600);
+  --color-focus: var(--color-gold);
+  --color-info: var(--color-ink);
+  --color-info-bg: var(--color-blue-50);
+  --color-success: var(--color-green-700);
+  --color-success-bg: var(--color-green-50);
+  --color-warning: var(--color-amber-800);
+  --color-warning-bg: var(--color-amber-50);
+  --color-error: var(--color-red-600);
+  --color-error-bg: var(--color-red-50);
+  --color-overlay: rgb(0 31 54 / 0.55);
+
+  /* Typography — grotesque UI, high-contrast serif for headlines */
+  --font-family-primary: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-family-display: "Cormorant Garamond", "Times New Roman", Times, serif;
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.75rem;
+  --font-size-2xl: 2.5rem;
+  --font-size-3xl: 3.5rem;
+  --line-height-tight: 1.15;
+  --line-height-body: 1.5;
+  --tracking-caps: 0.14em;
+  --typography-body-sm: var(--font-weight-regular) var(--font-size-sm)/var(--line-height-body) var(--font-family-primary);
+  --typography-body-md: var(--font-weight-regular) var(--font-size-md)/var(--line-height-body) var(--font-family-primary);
+  --typography-body-lg: var(--font-weight-regular) var(--font-size-lg)/var(--line-height-body) var(--font-family-primary);
+  --typography-display: var(--font-weight-medium) var(--font-size-2xl)/var(--line-height-tight) var(--font-family-display);
+
+  /* Spacing (4px base) */
+  --spacing-xxs: 0.25rem;
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  --spacing-3xl: 4rem;
+
+  /* Radius — square retail chrome; pill kept for switches and dots */
+  --border-radius-sm: 0;
+  --border-radius-md: 0;
+  --border-radius-lg: 0;
+  --border-radius-pill: 999px;
+
+  /* Shadows */
+  --shadow-dropdown: 0 8px 24px rgb(0 31 54 / 0.12);
+  --shadow-modal: 0 24px 64px rgb(0 31 54 / 0.22);
+  --shadow-toast: 0 8px 24px rgb(0 31 54 / 0.16);
+
+  /* Z-index */
+  --z-index-base: 0;
+  --z-index-sticky: 100;
+  --z-index-dropdown: 200;
+  --z-index-overlay: 300;
+  --z-index-modal: 400;
+  --z-index-toast: 500;
+  --z-index-tooltip: 600;
+
+  /* Motion */
+  --transition-fast: 120ms ease-out;
+  --transition-base: 200ms ease-out;
+  --transition-slow: 320ms cubic-bezier(0.2, 0, 0, 1);
+
+  /* Focus */
+  --focus-ring: 0 0 0 2px var(--color-white), 0 0 0 4px var(--color-focus);
+
+  /* Layout */
+  --container-sm: 640px;
+  --container-md: 960px;
+  --container-lg: 1280px;
+  --container-xl: 1536px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0ms linear;
+    --transition-base: 0ms linear;
+    --transition-slow: 0ms linear;
+  }
+}

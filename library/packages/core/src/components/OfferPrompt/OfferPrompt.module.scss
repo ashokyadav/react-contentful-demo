@@ -1,0 +1,24 @@
+.chip {
+  position: fixed;
+  left: var(--spacing-lg);
+  bottom: var(--spacing-lg);
+  z-index: var(--z-index-sticky);
+  display: flex;
+  align-items: center;
+  background: var(--color-background-inverse);
+  color: white;
+  padding-right: 4px;
+}
+
+.dismiss {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  color: white;
+  cursor: pointer;
+}

@@ -1,0 +1,20 @@
+@use "@myproject/foundations/styles/mixins" as z;
+
+.list { display: flex; gap: var(--spacing-md); border-bottom: 1px solid var(--color-border-subtle); overflow-x: auto; }
+.tab {
+  @include z.reset-button;
+  min-height: 44px;
+  padding: 0 var(--spacing-xxs);
+  margin-bottom: -1px;
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  border-bottom: 1px solid transparent;
+  @include z.focus-visible;
+  &:hover:not(:disabled) { color: var(--color-text-primary); }
+  &[aria-selected="true"] { color: var(--color-text-primary); font-weight: var(--font-weight-medium); border-bottom-color: var(--color-border-strong); }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+}
+.panel { padding-block: var(--spacing-lg); @include z.focus-visible; }

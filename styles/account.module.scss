@@ -1,0 +1,33 @@
+.page {
+  padding-block: var(--spacing-xl) var(--spacing-3xl);
+}
+
+.heading {
+  margin: 0 0 var(--spacing-sm);
+  font-family: var(--font-family-display);
+  font-style: italic;
+  font-weight: var(--font-weight-regular);
+  font-size: 2.25rem;
+}
+
+.lead {
+  margin: 0 0 var(--spacing-xl);
+  color: var(--color-text-secondary);
+}
+
+.narrow {
+  max-width: 36rem;
+}
+
+.actions {
+  margin-top: var(--spacing-lg);
+}
+
+.switch {
+  margin: var(--spacing-lg) 0 0;
+}
+
+.panel {
+  display: grid;
+  gap: var(--spacing-lg);
+}

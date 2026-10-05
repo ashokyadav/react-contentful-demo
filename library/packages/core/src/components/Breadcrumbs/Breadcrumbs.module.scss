@@ -1,0 +1,16 @@
+@use "@myproject/foundations/styles/mixins" as z;
+
+.breadcrumbs ol { @include z.reset-list; display: flex; flex-wrap: wrap; align-items: center; font-size: var(--font-size-xs); letter-spacing: 0.06em; text-transform: uppercase; }
+.breadcrumbs li { display: inline-flex; align-items: center; }
+// Separator is CSS-generated so it isn't read aloud.
+.breadcrumbs li + li::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  margin-inline: var(--spacing-xs);
+  border-top: 1.5px solid var(--color-text-secondary);
+  border-right: 1.5px solid var(--color-text-secondary);
+  transform: rotate(45deg);
+}
+.breadcrumbs a { color: var(--color-text-secondary); padding-block: var(--spacing-xs); &:hover { color: var(--color-text-primary); } }
+.breadcrumbs [aria-current="page"] { font-weight: var(--font-weight-medium); }

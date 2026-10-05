@@ -1,0 +1,6 @@
+node_modules
+.next
+storybook-static
+.env
+.env.local
+.env*.local

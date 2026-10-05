@@ -1,0 +1,13 @@
+@use "@myproject/foundations/styles/mixins" as z;
+
+.wrap { overflow-x: auto; @include z.focus-visible; }
+.table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); }
+.caption { text-align: left; font-family: var(--font-family-display); font-size: var(--font-size-xl); font-weight: var(--font-weight-medium); padding-bottom: var(--spacing-sm); }
+.table th, .table td { padding: var(--spacing-sm); text-align: left; border-bottom: 1px solid var(--color-border-subtle); vertical-align: top; }
+.table thead th { font-size: var(--font-size-xs); font-weight: var(--font-weight-medium); letter-spacing: var(--tracking-caps); text-transform: uppercase; border-bottom: 1px solid var(--color-border-strong); white-space: nowrap; }
+.table tbody th { font-weight: var(--font-weight-medium); }
+.table .end { text-align: right; font-variant-numeric: tabular-nums; }
+.striped tbody tr:nth-child(even) { background: var(--color-background-secondary); }
+.sortButton { @include z.reset-button; display: inline-flex; align-items: center; gap: var(--spacing-xxs); font-weight: inherit; min-height: 32px; @include z.focus-visible; }
+.sortIcon { display: inline-flex; color: var(--color-text-secondary); }
+.empty { text-align: center !important; color: var(--color-text-secondary); padding: var(--spacing-xl) !important; }

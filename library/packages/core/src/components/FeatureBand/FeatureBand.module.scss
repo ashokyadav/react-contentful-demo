@@ -1,0 +1,24 @@
+.feature {
+  position: relative;
+  color: white;
+}
+
+.copy {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  padding: var(--spacing-xl);
+  background: linear-gradient(rgb(0 0 0 / 0.28), rgb(0 0 0 / 0.28));
+
+  h2, p { color: white; margin: 0 0 var(--spacing-sm); }
+  h2 { font-size: clamp(2rem, 4vw, 3.25rem); }
+}
+
+.action {
+  background: white;
+  border-color: white;
+  color: #1c1c1c;
+  min-width: 9.5rem;
+}

@@ -1,0 +1,37 @@
+@use "@myproject/foundations/styles/mixins" as z;
+
+.card { position: relative; display: flex; flex-direction: column; background: var(--color-background-primary); }
+.outlined { border: 1px solid var(--color-border-subtle); border-radius: var(--border-radius-lg); overflow: hidden; }
+.filled { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); overflow: hidden; }
+.media { overflow: hidden; img { transition: transform var(--transition-slow); } }
+.body { display: flex; flex-direction: column; gap: var(--spacing-xxs); padding-block: var(--spacing-sm); padding-inline: var(--spacing-sm); }
+.outlined .body, .filled .body { padding: var(--spacing-md); }
+.eyebrow {
+  order: -1;
+  margin: 0;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+}
+.title {
+  margin: 0;
+  color: #000;
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-tight);
+}
+.content { color: var(--color-text-secondary); font-size: var(--font-size-sm); > p { margin: 0; } }
+.footer { position: relative; z-index: 1; margin-top: var(--spacing-xs); display: flex; gap: var(--spacing-xs); flex-wrap: wrap; }
+
+.link {
+  text-decoration: none;
+  color: inherit;
+  &::after { content: ""; position: absolute; inset: 0; }
+  &:focus-visible { box-shadow: none; outline: none; }
+  &:focus-visible::after { box-shadow: var(--focus-ring); border-radius: inherit; }
+}
+.linked:hover .title { text-decoration: underline; text-underline-offset: 0.2em; }
+.linked:hover .media img { transform: scale(1.03); }

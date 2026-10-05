@@ -1,0 +1,14 @@
+{
+  "name": "@myproject/core",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "sideEffects": ["*.scss", "*.css"],
+  "peerDependencies": {
+    "@myproject/foundations": "^1.0.0",
+    "@myproject/icons": "^1.0.0",
+    "next": ">=13.4.12",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}

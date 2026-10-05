@@ -1,0 +1,73 @@
+// Shared by Checkbox and Radio.
+.fieldset { border: 0; margin: 0 0 var(--spacing-lg); padding: 0; min-width: 0; }
+.legend { padding: 0; margin-bottom: var(--spacing-xs); font-weight: var(--font-weight-medium); }
+.required { color: var(--color-error); }
+.options { display: flex; flex-direction: column; gap: var(--spacing-xs); }
+.horizontal { flex-direction: row; flex-wrap: wrap; gap: var(--spacing-lg); }
+
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  min-height: 44px;
+  padding-block: var(--spacing-xs);
+}
+
+.input {
+  appearance: none;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin: 1px 0 0;
+  border: 1.5px solid var(--color-border-default);
+  background: var(--color-background-primary);
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+
+  &:hover:not(:disabled) { border-color: var(--color-border-strong); }
+  &:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+  &[aria-invalid="true"] { border-color: var(--color-error); border-width: 2px; }
+}
+
+.checkbox {
+  border-radius: var(--border-radius-sm);
+  &::before {
+    content: "";
+    width: 12px;
+    height: 12px;
+    transform: scale(0);
+    background: var(--color-text-inverse);
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+    transition: transform var(--transition-fast);
+  }
+  &:checked, &:indeterminate { background: var(--color-action-primary); border-color: var(--color-action-primary); }
+  &:checked::before { transform: scale(1); }
+  &:indeterminate::before { transform: scale(1); clip-path: inset(40% 5%); }
+}
+
+.radio {
+  border-radius: 50%;
+  &::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    transform: scale(0);
+    background: var(--color-action-primary);
+    transition: transform var(--transition-fast);
+  }
+  &:checked { border-color: var(--color-action-primary); border-width: 2px; }
+  &:checked::before { transform: scale(1); }
+}
+
+.text { display: flex; flex-direction: column; gap: 2px; }
+.label { cursor: pointer; }
+.hint { margin: 0; font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+
+@media (forced-colors: active) {
+  .checkbox::before, .radio::before { background: CanvasText; }
+  .input:checked { border-color: Highlight; }
+}

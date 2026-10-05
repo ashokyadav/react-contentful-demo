@@ -1,0 +1,7 @@
+{
+  "name": "@myproject/foundations",
+  "version": "1.0.0",
+  "description": "Design tokens, base styles, and themes",
+  "files": ["styles", "themes"],
+  "sideEffects": ["*.css", "*.scss"]
+}

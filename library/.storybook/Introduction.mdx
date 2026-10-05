@@ -1,0 +1,42 @@
+import { Meta } from "@storybook/blocks";
+
+<Meta title="Introduction" />
+
+# library
+
+React components, design tokens and icons for the myproject Global Design System.
+
+```tsx
+import { Button } from "@myproject/core";
+import { IconBag } from "@myproject/icons";
+import "@myproject/foundations/styles/base.scss";
+```
+
+## How to read a component
+
+Open any component and choose **Docs**. The page says when to use it, shows a snippet, lists props, and renders the examples. **Canvas** is the same example, full screen.
+
+## Categories
+
+| Category | Components |
+| --- | --- |
+| Core | Button, TextInput, Checkbox, Radio / RadioGroup, Toggle, Select, Textarea, VideoPlayer |
+| Layout | Container, Grid / GridItem, Flex, Header, Footer, Sidebar, Navigation |
+| Media | Image, Carousel, Gallery |
+| Navigation | Navbar, Breadcrumbs, Tabs, Stepper, Pagination |
+| Feedback | Alert, Toast, Modal, Spinner, ProgressBar, Skeleton |
+| Data Display | Table, Card, List, Badge, Tag, Tooltip, Price, Accordion |
+| Form | Form, FormGroup, ErrorSummary, FormField, Label, ErrorMessage, Autocomplete, QuantityInput, OptionGroup |
+| Product | Buy box — the jacket page, assembled from the components above |
+
+## Accessibility contract
+
+Every component targets WCAG 2.1 AA (and 2.2 AA where it applies). What's built in:
+
+- **Names are required, not optional.** Props like `label`, `caption`, `alt` and `title` are required in the types wherever a control or landmark needs an accessible name.
+- **Native first.** `Select`, `Checkbox`, `Radio` and `Modal` (`<dialog>`) use native elements. Custom widgets (`Tabs`, `Autocomplete`, `Carousel`, `Tooltip`) follow the WAI-ARIA APG patterns.
+- **Errors are connected.** `FormField` wires `aria-describedby`, `aria-invalid` and required state; `ErrorSummary` moves focus to the problem list after submit.
+- **Motion respects the user.** Tokens drop to 0ms under `prefers-reduced-motion`; `VideoPlayer variant="ambient"` doesn't autoplay and always has a pause control.
+- **Forced colors.** Focus rings, checks and selected states stay visible in Windows High Contrast.
+
+Open the **Accessibility** panel on any story to run axe against WCAG 2.2 AA.

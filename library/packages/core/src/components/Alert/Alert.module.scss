@@ -1,0 +1,30 @@
+@use "@myproject/foundations/styles/mixins" as z;
+
+.alert {
+  display: flex;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  border-left: 4px solid;
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-primary);
+}
+.info { background: var(--color-info-bg); border-color: var(--color-info); .icon { color: var(--color-info); } }
+.success { background: var(--color-success-bg); border-color: var(--color-success); .icon { color: var(--color-success); } }
+.warning { background: var(--color-warning-bg); border-color: var(--color-warning); .icon { color: var(--color-warning); } }
+.error { background: var(--color-error-bg); border-color: var(--color-error); .icon { color: var(--color-error); } }
+
+.icon { flex-shrink: 0; display: flex; padding-top: 1px; }
+.body { flex: 1; min-width: 0; }
+.title { margin: 0; font-weight: var(--font-weight-bold); }
+.content { > p { margin: var(--spacing-xxs) 0 0; } }
+.title + .content > p:first-child { margin-top: var(--spacing-xxs); }
+.action { margin-top: var(--spacing-sm); }
+.dismiss {
+  @include z.reset-button;
+  @include z.touch-target;
+  margin: calc(var(--spacing-sm) * -1);
+  display: grid;
+  place-items: center;
+  @include z.focus-visible;
+}
+@media (forced-colors: active) { .alert { border: 1px solid CanvasText; border-left-width: 4px; } }

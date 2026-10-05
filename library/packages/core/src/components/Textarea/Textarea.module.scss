@@ -1,0 +1,8 @@
+.textarea { resize: vertical; min-height: 96px; }
+.count {
+  margin: 0;
+  text-align: right;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+.near { color: var(--color-warning); font-weight: var(--font-weight-medium); }

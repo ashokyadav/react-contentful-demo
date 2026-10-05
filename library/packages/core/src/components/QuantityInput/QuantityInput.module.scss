@@ -1,0 +1,42 @@
+@use "@myproject/foundations/styles/mixins" as z;
+
+.field { display: flex; flex-direction: column; gap: var(--spacing-xs); }
+.label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+.control {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border: 1px solid var(--color-border-default);
+}
+.step {
+  @include z.reset-button;
+  width: 44px;
+  height: 44px;
+  font-size: var(--font-size-lg);
+  line-height: 1;
+  @include z.focus-visible;
+  &:hover:not(:disabled) { background: var(--color-background-secondary); }
+  &:disabled { opacity: 0.35; cursor: not-allowed; }
+}
+.input {
+  width: 3rem;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-inline: 1px solid var(--color-border-subtle);
+  background: transparent;
+  text-align: center;
+  font: var(--typography-body-md);
+  color: inherit;
+  &:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); }
+  &:disabled { cursor: not-allowed; }
+}
+
+@media (forced-colors: active) {
+  .control { border-color: CanvasText; }
+  .step:disabled { opacity: 1; color: GrayText; }
+}

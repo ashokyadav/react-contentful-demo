@@ -1,0 +1,32 @@
+@use "@myproject/foundations/styles/mixins" as z;
+
+.player { margin: 0; }
+.video { display: block; width: 100%; height: 100%; object-fit: cover; background: var(--color-background-inverse); }
+.meta { margin-top: var(--spacing-xs); font-size: var(--font-size-sm); }
+
+.ambient { position: relative; overflow: hidden; }
+.ambient .video { position: absolute; inset: 0; }
+.overlay {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: var(--spacing-xl);
+  color: var(--color-text-inverse);
+  // Scrim guarantees text contrast over any frame of the video.
+  background: linear-gradient(to top, rgb(27 29 36 / 0.75), rgb(27 29 36 / 0) 65%);
+}
+.control {
+  @include z.reset-button;
+  @include z.touch-target;
+  position: absolute;
+  right: var(--spacing-md);
+  bottom: var(--spacing-md);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-background-primary);
+  color: var(--color-text-primary);
+  @include z.focus-visible;
+}

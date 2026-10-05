@@ -1,0 +1,25 @@
+@use "@myproject/foundations/styles/mixins" as z;
+
+.accordion { border-top: 1px solid var(--color-border-subtle); }
+.item { border-bottom: 1px solid var(--color-border-subtle); }
+.heading { margin: 0; font-size: inherit; font-weight: inherit; font-family: inherit; }
+.trigger {
+  @include z.reset-button;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  width: 100%;
+  min-height: 56px;
+  padding-block: var(--spacing-sm);
+  text-align: start;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.04em;
+  @include z.focus-visible;
+}
+.icon { flex-shrink: 0; transition: transform var(--transition-fast); }
+.iconOpen { transform: rotate(180deg); }
+.panel { padding-bottom: var(--spacing-md); color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.panel > :first-child { margin-top: 0; }
+.panel > :last-child { margin-bottom: 0; }

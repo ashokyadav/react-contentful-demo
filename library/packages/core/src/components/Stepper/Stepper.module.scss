@@ -1,0 +1,26 @@
+@use "@myproject/foundations/styles/mixins" as z;
+
+.stepper ol { @include z.reset-list; display: flex; gap: var(--spacing-xs); counter-reset: none; }
+.stepper li { flex: 1; display: flex; align-items: center; gap: var(--spacing-xs); min-width: 0; }
+.stepper li + li::before { content: ""; flex: 0 0 var(--spacing-lg); height: 1px; background: var(--color-stone-300); }
+.inner { display: flex; align-items: center; gap: var(--spacing-xs); min-height: 44px; text-decoration: none; color: inherit; }
+.marker {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-border-default);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+.label { font-size: var(--font-size-sm); overflow: hidden; text-overflow: ellipsis; }
+.complete .marker { background: var(--color-action-primary); border-color: var(--color-action-primary); color: var(--color-text-inverse); }
+.current .marker { border: 2px solid var(--color-border-strong); }
+.current .label { font-weight: var(--font-weight-bold); }
+.upcoming { color: var(--color-text-secondary); }
+
+@media (max-width: 600px) {
+  .upcoming .label, .complete .label { @include z.visually-hidden; }
+}

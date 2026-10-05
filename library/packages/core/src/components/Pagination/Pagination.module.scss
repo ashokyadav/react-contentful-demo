@@ -1,0 +1,16 @@
+@use "@myproject/foundations/styles/mixins" as z;
+
+.pagination ul { @include z.reset-list; display: flex; align-items: center; gap: var(--spacing-xxs); flex-wrap: wrap; }
+.item {
+  @include z.reset-button;
+  @include z.touch-target;
+  display: grid;
+  place-items: center;
+  padding-inline: var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  @include z.focus-visible;
+  &:hover:not(:disabled):not([aria-current]) { background: var(--color-background-secondary); }
+  &[aria-current="page"] { background: var(--color-action-primary); color: var(--color-text-inverse); font-weight: var(--font-weight-medium); }
+  &:disabled { opacity: 0.35; cursor: not-allowed; }
+}
+.gap { padding-inline: var(--spacing-xs); color: var(--color-text-secondary); }

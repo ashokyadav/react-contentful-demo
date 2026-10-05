@@ -1,0 +1,71 @@
+@use "@myproject/foundations/styles/mixins" as z;
+
+.button {
+  @include z.reset-button;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  border: 1px solid transparent;
+  border-radius: var(--border-radius-sm);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  transition: background-color var(--transition-fast), color var(--transition-fast),
+    border-color var(--transition-fast);
+  @include z.focus-visible;
+
+  &:disabled { cursor: not-allowed; opacity: 0.45; }
+}
+
+.sm { min-height: 36px; padding: 0 var(--spacing-sm); font-size: 0.6875rem; }
+.md { min-height: 44px; padding: 0 var(--spacing-lg); font-size: var(--font-size-xs); }
+.lg { min-height: 52px; padding: 0 var(--spacing-xl); font-size: var(--font-size-sm); }
+
+.primary {
+  background: var(--color-action-primary);
+  color: var(--color-text-inverse);
+  &:hover:not(:disabled):not(.loading) { background: var(--color-action-primary-hover); }
+}
+.secondary {
+  background: var(--color-background-primary);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-strong);
+  &:hover:not(:disabled):not(.loading) { background: var(--color-background-secondary); }
+}
+.tertiary {
+  color: var(--color-text-primary);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+  padding-inline: var(--spacing-xs);
+  &:hover:not(:disabled) { text-decoration-thickness: 2px; }
+}
+.danger {
+  background: var(--color-action-danger);
+  color: var(--color-text-inverse);
+  &:hover:not(:disabled):not(.loading) { filter: brightness(0.9); }
+}
+
+.fullWidth { width: 100%; }
+.icon { display: inline-flex; }
+.loading { cursor: progress; }
+.loading .label, .loading .icon { visibility: hidden; }
+
+.spinner {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 1.1em;
+  height: 1.1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (forced-colors: active) {
+  .button { border-color: ButtonText; }
+}

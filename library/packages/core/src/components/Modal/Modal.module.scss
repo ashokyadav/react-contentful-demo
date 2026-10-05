@@ -1,0 +1,46 @@
+@use "@myproject/foundations/styles/mixins" as z;
+
+.dialog {
+  padding: 0;
+  border: 0;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-modal);
+  color: var(--color-text-primary);
+  background: var(--color-background-primary);
+  width: calc(100% - 2 * var(--spacing-md));
+  max-height: calc(100dvh - 2 * var(--spacing-xl));
+  &::backdrop { background: var(--color-overlay); }
+  &[open] { animation: pop var(--transition-base); }
+}
+.sm { max-width: 400px; }
+.md { max-width: 560px; }
+.lg { max-width: 840px; }
+
+.drawer {
+  margin: 0 0 0 auto;
+  height: 100dvh;
+  max-height: 100dvh;
+  border-radius: 0;
+  &[open] { animation: slide var(--transition-slow); }
+}
+.surface { display: flex; flex-direction: column; max-height: inherit; height: 100%; }
+.header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-md); padding: var(--spacing-lg) var(--spacing-lg) 0; }
+.title { margin: 0; padding-top: var(--spacing-xs); font-family: var(--font-family-display); font-size: var(--font-size-2xl); font-weight: var(--font-weight-medium); line-height: var(--line-height-tight); }
+.description { margin: var(--spacing-xs) var(--spacing-lg) 0; color: var(--color-text-secondary); }
+.body { padding: var(--spacing-lg); overflow-y: auto; flex: 1; }
+.footer { display: flex; justify-content: flex-end; gap: var(--spacing-sm); padding: var(--spacing-md) var(--spacing-lg); border-top: 1px solid var(--color-border-subtle); flex-wrap: wrap; }
+.close { @include z.reset-button; @include z.touch-target; display: grid; place-items: center; margin: calc(var(--spacing-xs) * -1); @include z.focus-visible; }
+
+.fullscreen {
+  width: 100%;
+  max-width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0;
+  border-radius: 0;
+  &[open] { animation: slide-start var(--transition-slow); }
+}
+
+@keyframes pop { from { opacity: 0; transform: translateY(12px) scale(0.98); } }
+@keyframes slide { from { transform: translateX(100%); } }
+@keyframes slide-start { from { transform: translateX(-100%); } }

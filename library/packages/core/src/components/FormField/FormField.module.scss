@@ -1,0 +1,53 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+  margin-bottom: var(--spacing-lg);
+}
+
+.label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+}
+
+.required { color: var(--color-error); }
+
+.hint {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.error {
+  display: flex;
+  gap: var(--spacing-xxs);
+  align-items: flex-start;
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+  svg { flex-shrink: 0; margin-top: 0.15em; }
+}
+
+.disabled .label, .disabled .hint { opacity: 0.6; }
+
+/* Shared control skin, reused by TextInput / Textarea / Select / Autocomplete */
+.control {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font: var(--typography-body-md);
+  color: var(--color-text-primary);
+  background: var(--color-background-primary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--border-radius-sm);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+
+  &:hover:not(:disabled) { border-color: var(--color-border-strong); }
+  &:focus-visible, &:focus { outline: 2px solid transparent; box-shadow: var(--focus-ring); }
+  &[aria-invalid="true"] { border-color: var(--color-error); border-width: 2px; }
+  &:disabled { background: var(--color-background-secondary); cursor: not-allowed; }
+  &::placeholder { color: var(--color-text-secondary); }
+}

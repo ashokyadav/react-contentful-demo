@@ -1,0 +1,25 @@
+@use "@myproject/foundations/styles/mixins" as z;
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xxs);
+  min-height: 32px;
+  padding-inline: var(--spacing-sm);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+.removable { padding-right: 2px; }
+.remove {
+  @include z.reset-button;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  @include z.focus-visible;
+  &:hover { background: var(--color-background-secondary); }
+}

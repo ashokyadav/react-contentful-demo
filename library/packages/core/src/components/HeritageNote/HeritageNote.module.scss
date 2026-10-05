@@ -1,0 +1,15 @@
+.heritage {
+  background: #142033;
+  color: white;
+  text-align: center;
+  padding: var(--spacing-3xl) var(--spacing-lg);
+
+  p { color: inherit; max-width: 40rem; margin-inline: auto; }
+}
+
+.mark {
+  font-family: var(--font-family-display);
+  font-style: italic;
+  font-size: 2.5rem;
+  margin: 0 0 var(--spacing-md);
+}

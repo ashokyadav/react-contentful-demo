@@ -1,0 +1,50 @@
+.band {
+  background: #3e4a3c;
+  color: white;
+  padding-block: var(--spacing-3xl);
+
+  h2, p { color: inherit; }
+}
+
+.layout {
+  display: grid;
+  gap: var(--spacing-lg);
+  align-items: center;
+
+  @media (min-width: 768px) {
+    grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr);
+  }
+}
+
+.products {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 11rem;
+  gap: var(--spacing-md);
+  min-width: 0;
+  overflow-x: auto;
+
+  @media (min-width: 1200px) {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(var(--arrival-count), minmax(0, 1fr));
+    overflow: visible;
+  }
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding-right: var(--spacing-md);
+
+  h2 { margin: 0; font-size: clamp(2rem, 4vw, 3rem); }
+  p { margin: 0; max-width: 16rem; }
+}
+
+.action {
+  background: white;
+  border-color: white;
+  color: #1c1c1c;
+  min-width: 9.5rem;
+}

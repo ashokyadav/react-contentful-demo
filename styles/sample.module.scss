@@ -1,0 +1,11 @@
+.page {
+  background: var(--color-background-primary);
+  color: var(--color-text-primary);
+}
+
+.note {
+  width: min(40rem, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 1.5rem 0 3rem;
+  line-height: 1.5;
+}
