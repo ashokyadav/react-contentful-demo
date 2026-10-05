@@ -264,9 +264,9 @@ header.siteHeader {
   > div:first-child {
     position: absolute;
     z-index: 2;
-    top: 50%;
-    right: var(--spacing-md);
-    transform: translateY(-50%);
+    bottom: 3.25rem;
+    left: 50%;
+    transform: translateX(-50%);
 
     button {
       background: white;
