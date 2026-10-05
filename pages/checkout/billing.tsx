@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Head from "next/head";
+import { PageMeta } from "../../components/PageMeta";
 import { useRouter } from "next/router";
 import {
   Button,
@@ -85,9 +85,7 @@ export default function BillingPage({ checkout }: { checkout: StoreCheckout }) {
 
   return (
     <>
-      <Head>
-        <title>{checkout.steps[1]?.label}</title>
-      </Head>
+      <PageMeta title={checkout.steps[1]?.label || ""} description={checkout.signInPrompt} site={site.name} />
       <div className={styles.shell}>
         <header className={styles.header}>
           <a href="/" className={styles.wordmark}>{site.name}</a>

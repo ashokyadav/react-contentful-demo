@@ -1,5 +1,6 @@
 import { useState } from "react";
-import Head from "next/head";
+import { PageMeta } from "../components/PageMeta";
+import { useSite } from "../components/SiteContext";
 import { useRouter } from "next/router";
 import {
   Accordion,
@@ -94,6 +95,7 @@ function BagLine({
 
 export default function CartPage({ page }: { page: StoreCart }) {
   const router = useRouter();
+  const site = useSite();
   const { show } = useToast();
   const { lines, saved, updateQuantity, setDelivery, remove, saveForLater, moveToBag } = useCart();
   const [code, setCode] = useState("");
@@ -124,9 +126,7 @@ export default function CartPage({ page }: { page: StoreCart }) {
 
   return (
     <SiteFrame>
-      <Head>
-        <title>{page.title}</title>
-      </Head>
+      <PageMeta title={page.title} description={`${page.bannerText} ${page.bannerPrompt}`.trim()} site={site.name} />
       <main id="main" className={styles.page}>
         <Container size="xl">
           <p className={styles.banner}>

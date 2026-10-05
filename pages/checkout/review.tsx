@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Head from "next/head";
+import { PageMeta } from "../../components/PageMeta";
 import { useRouter } from "next/router";
 import {
   Alert,
@@ -54,9 +54,7 @@ export default function ReviewPage({ checkout }: { checkout: StoreCheckout }) {
 
   return (
     <>
-      <Head>
-        <title>{checkout.reviewTitle}</title>
-      </Head>
+      <PageMeta title={checkout.reviewTitle} description={checkout.reviewAlertBody} site={site.name} />
       <div className={styles.shell}>
         <header className={styles.header}>
           <a href="/" className={styles.wordmark}>{site.name}</a>

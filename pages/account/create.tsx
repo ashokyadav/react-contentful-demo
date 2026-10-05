@@ -1,5 +1,6 @@
 import { useRef, useState, type FormEvent } from "react";
-import Head from "next/head";
+import { PageMeta } from "../../components/PageMeta";
+import { useSite } from "../../components/SiteContext";
 import { useRouter } from "next/router";
 import {
   Button,
@@ -21,6 +22,7 @@ type CreateErrors = Partial<Record<"first" | "last" | "email" | "password" | "co
 
 export default function CreateAccountPage({ copy }: { copy: AccountCopy }) {
   const router = useRouter();
+  const site = useSite();
   const site = useSite();
   const summaryRef = useRef<HTMLDivElement>(null);
   const [errors, setErrors] = useState<CreateErrors>({});
@@ -63,9 +65,7 @@ export default function CreateAccountPage({ copy }: { copy: AccountCopy }) {
 
   return (
     <SiteFrame>
-      <Head>
-        <title>{copy.create}</title>
-      </Head>
+      <PageMeta title={copy.create} description={copy.createLead} site={site.name} />
       <main id="main" className={styles.page}>
         <Container>
           <div className={styles.narrow}>

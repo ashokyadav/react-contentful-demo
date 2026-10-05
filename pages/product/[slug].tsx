@@ -1,9 +1,10 @@
 import { useState } from "react";
-import Head from "next/head";
 import { useRouter } from "next/router";
 import { Accordion, Badge, Breadcrumbs, Button, Container, Gallery, OptionGroup, Price, QuantityInput, useToast } from "@myproject/core";
 import { useCart } from "../../components/CartStore";
+import { PageMeta } from "../../components/PageMeta";
 import { SiteFrame } from "../../components/SiteFrame";
+import { useSite } from "../../components/SiteContext";
 import { getProductPage, getSite, type StoreProduct } from "../../lib/contentstack";
 import { persistScope, scopeFor, scopeFrom } from "../../lib/scope";
 import styles from "../../styles/home.module.scss";
@@ -17,6 +18,7 @@ type ProductPageProps = {
 
 export default function ProductPage({ product, department, crumbs, color }: ProductPageProps) {
   const router = useRouter();
+  const site = useSite();
   const { show } = useToast();
   const { addItem } = useCart();
   const initial = product.swatches.find((swatch) => swatch.value === color)?.value || product.swatches[0]?.value || "";
@@ -51,9 +53,7 @@ export default function ProductPage({ product, department, crumbs, color }: Prod
 
   return (
     <SiteFrame current={department} showBanner={false}>
-      <Head>
-        <title>{product.title}</title>
-      </Head>
+      <PageMeta title={product.title} description={product.alt} site={site.name} />
       <main id="main">
         <Container>
           <div className={styles.product}>

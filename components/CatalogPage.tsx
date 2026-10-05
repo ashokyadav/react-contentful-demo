@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
-import Head from "next/head";
 import { useRouter } from "next/router";
 import { Badge, Breadcrumbs, Button, Card, Container, Grid, Image, Pagination, Price, Select, SwatchPicker } from "@myproject/core";
 import type { StoreCatalog, StoreProduct } from "../lib/contentstack";
 import { fill } from "../lib/contentstack";
+import { PageMeta } from "./PageMeta";
+import { useSite } from "./SiteContext";
 import { SiteFrame } from "./SiteFrame";
 import styles from "../styles/catalog.module.scss";
 
@@ -47,6 +48,7 @@ function ProductCard({ product }: { product: StoreProduct }) {
 
 export function CatalogPage({ catalog }: { catalog: StoreCatalog }) {
   const router = useRouter();
+  const site = useSite();
   const [sort, setSort] = useState("featured");
   const [page, setPage] = useState(1);
   const requested = typeof router.query.category === "string" ? router.query.category : "all";
@@ -74,9 +76,7 @@ export function CatalogPage({ catalog }: { catalog: StoreCatalog }) {
 
   return (
     <SiteFrame current={catalog.department}>
-      <Head>
-        <title>{catalog.title}</title>
-      </Head>
+      <PageMeta title={catalog.title} description={catalog.lede} site={site.name} />
       <main id="main" className={styles.page}>
         <Container size="xl">
           <header className={styles.heading}>

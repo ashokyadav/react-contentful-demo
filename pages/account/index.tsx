@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import Head from "next/head";
+import { PageMeta } from "../../components/PageMeta";
 import { useRouter } from "next/router";
 import {
   Alert,
@@ -96,9 +96,7 @@ export default function AccountPage({ copy, methods }: { copy: AccountCopy; meth
 
   return (
     <SiteFrame>
-      <Head>
-        <title>{copy.title}</title>
-      </Head>
+      <PageMeta title={view === "orders" ? copy.orders : copy.title} description={copy.lead} site={site.name} />
       <main id="main" className={styles.page}>
         <Container>
           {!ready ? null : shopper ? (

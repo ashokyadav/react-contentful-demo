@@ -1,5 +1,6 @@
-import Head from "next/head";
 import { HeroBanner } from "@myproject/core";
+import { PageMeta } from "../components/PageMeta";
+import { useSite } from "../components/SiteContext";
 import { SiteFrame } from "../components/SiteFrame";
 import { getHomePage, getSite, type StoreHome } from "../lib/contentstack";
 import { persistScope, scopeFor, scopeFrom } from "../lib/scope";
@@ -8,11 +9,10 @@ import styles from "../styles/sample.module.scss";
 type Props = { hero: StoreHome["hero"] };
 
 export default function SamplePage({ hero }: Props) {
+  const site = useSite();
   return (
     <SiteFrame>
-      <Head>
-        <title>Sample</title>
-      </Head>
+      <PageMeta title={hero?.offer || site.name} description={hero?.note} site={hero ? site.name : ""} />
       <main id="main" className={styles.page}>
         {hero && <HeroBanner {...hero} />}
         <p className={styles.note}>

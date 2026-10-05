@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Head from "next/head";
+import { PageMeta } from "../../components/PageMeta";
 import { Alert, Button, Image, List, ListItem, Price } from "@myproject/core";
 import { useFooter } from "../../components/FooterContent";
 import { useSite } from "../../components/SiteContext";
@@ -40,9 +40,7 @@ export default function ConfirmationPage({ checkout }: { checkout: StoreCheckout
 
   return (
     <>
-      <Head>
-        <title>{checkout.confirmationTitle}</title>
-      </Head>
+      <PageMeta title={checkout.confirmationTitle} description={order ? fill(checkout.confirmedBody, { email: order.email }) : checkout.noOrderBody} site={site.name} />
       <div className={styles.shell}>
         <header className={styles.header}>
           <a href="/" className={styles.wordmark}>{site.name}</a>

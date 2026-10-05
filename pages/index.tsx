@@ -14,7 +14,9 @@ import {
   ServiceGrid,
   type PanelGridItem,
 } from "@myproject/core";
+import { PageMeta } from "../components/PageMeta";
 import { SiteFrame } from "../components/SiteFrame";
+import { useSite } from "../components/SiteContext";
 import { useNavigationMenu } from "../components/NavigationMenu";
 import { emptyHome, getHomePage, getHomePanels, getSite, type StoreHome } from "../lib/contentstack";
 import { persistScope, scopeFor, scopeFrom } from "../lib/scope";
@@ -134,11 +136,14 @@ export default function HomePage({
   darkArrivals?: boolean;
 }) {
   const router = useRouter();
+  const site = useSite();
   const [promo, setPromo] = useState(false);
   const open = (href: string) => go(router, href);
+  const description = home.hero?.note || home.arrivals?.text || home.feature?.text || home.heritage?.text || "";
 
   return (
     <SiteFrame>
+      <PageMeta title={home.hero?.offer || site.name} description={description} site={home.hero ? site.name : ""} />
       <main id="main" className={darkArrivals ? styles.example1 : undefined}>
         {carousel ? (
           <>
