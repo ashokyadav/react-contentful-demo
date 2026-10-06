@@ -1,5 +1,6 @@
 import * as React from "react";
 import { IconClose } from "@myproject/icons";
+import { useLabel } from "../Labels/Labels";
 import { cx } from "../../utils/cx";
 import s from "./Modal.module.scss";
 
@@ -23,6 +24,7 @@ export interface ModalProps {
  * focus is contained, Esc closes, and focus returns to the trigger on close.
  */
 export function Modal({ open, onClose, title, description, children, footer, size = "md", placement = "center", closeOnBackdrop = true, className }: ModalProps) {
+  const closeLabel = useLabel("close", "Close");
   const ref = React.useRef<HTMLDialogElement>(null);
   const returnFocus = React.useRef<HTMLElement | null>(null);
   const titleId = React.useId();
@@ -63,7 +65,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
         <div className={s.header}>
           <h2 id={titleId} className={s.title}>{title}</h2>
           <button type="button" className={s.close} onClick={onClose}>
-            <IconClose /><span className="visually-hidden">Close</span>
+            <IconClose /><span className="visually-hidden">{closeLabel}</span>
           </button>
         </div>
         {description && <p id={descId} className={s.description}>{description}</p>}

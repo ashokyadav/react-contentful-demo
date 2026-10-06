@@ -1,5 +1,6 @@
 import * as React from "react";
 import { IconUser } from "@myproject/icons";
+import { useLabel } from "../Labels/Labels";
 import { useControllableState } from "../../utils/useControllableState";
 import { cx } from "../../utils/cx";
 import s from "./AccountMenu.module.scss";
@@ -84,6 +85,8 @@ export function AccountMenu({
     onSelect(action.id);
     setOpen(false);
   };
+  const account = useLabel("account", "Account");
+  const login = useLabel("login", "Login");
 
   return (
     <div ref={rootRef} className={cx(s.root, className)}>
@@ -95,11 +98,11 @@ export function AccountMenu({
         onClick={() => setOpen(!isOpen)}
       >
         <IconUser />
-        <span className="visually-hidden">Account</span>
+        <span className="visually-hidden">{account}</span>
       </button>
-      {isOpen ? <span className={s.login}>Login</span> : null}
+      {isOpen ? <span className={s.login}>{login}</span> : null}
       {isOpen ? (
-        <div id={panelId} role="dialog" aria-label="Account" className={s.panel}>
+        <div id={panelId} role="dialog" aria-label={account} className={s.panel}>
           <ul className={s.list}>
             <li><a href={signIn.href} onClick={choose(signIn)}>{signIn.label}</a></li>
             <li><a href={createAccount.href} onClick={choose(createAccount)}>{createAccount.label}</a></li>

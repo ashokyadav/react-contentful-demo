@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { Accordion, Badge, Breadcrumbs, Button, Container, Gallery, OptionGroup, Price, QuantityInput, ToastAnchor, useToast } from "@myproject/core";
+import { Accordion, Badge, Breadcrumbs, Button, Container, Gallery, OptionGroup, Price, QuantityInput, ToastAnchor, useLabel, useToast } from "@myproject/core";
 import { useCart } from "../../components/CartStore";
 import { PageMeta } from "../../components/PageMeta";
 import { SiteFrame } from "../../components/SiteFrame";
@@ -28,6 +28,19 @@ export default function ProductPage({ product, department, crumbs, color }: Prod
 
   const chosen = product.swatches.find((swatch) => swatch.value === selected);
   const images = chosen?.image ? [{ src: chosen.image, alt: chosen.alt || product.alt }] : product.images;
+  const colorLabel = useLabel("color", "Color");
+  const addToBagLabel = useLabel("addToBag", "Add to bag");
+  const wishlistLabel = useLabel("addToWishlist", "Add to wishlist");
+  const wishlistSaved = useLabel("wishlistSaved", "Saved to your wishlist.");
+  const detailsTitle = useLabel("productDetails", "Product details");
+  const shippingTitle = useLabel("shippingReturns", "Shipping & returns");
+  const shippingNote = useLabel("shippingNote", "Standard shipping arrives in 3 to 7 business days. Most items can be returned within 60 days.");
+  const viewBag = useLabel("viewBag", "View bag");
+  const addedTemplate = useLabel("added", "Added {count} {title} to your bag.");
+  const bagFullTemplate = useLabel("bagFull", "Your bag already has 10 {title}.");
+  const imagesLabel = useLabel("productImages", "{title} images", { title: product.title });
+  const fillLabel = (template: string, values: Record<string, string | number>) =>
+    template.replace(/\{(\w+)\}/g, (_, key) => String(values[key] ?? ""));
 
   const addToBag = () => {
     const added = addItem({
@@ -41,15 +54,15 @@ export default function ProductPage({ product, department, crumbs, color }: Prod
       ...(selected ? { color: selected } : {}),
     }, qty);
     if (added === 0) {
-      show({ slot: "bag", tone: "info", duration: 4000, message: `Your bag already has 10 ${product.title}.` });
+      show({ slot: "bag", tone: "info", duration: 4000, message: fillLabel(bagFullTemplate, { title: product.title }) });
       return;
     }
     show({
       slot: "bag",
       tone: "success",
       duration: 4000,
-      message: `Added ${added} ${product.title} to your bag.`,
-      action: { label: "View bag", onClick: () => router.push(withScope("/cart", { site: site.key, locale: site.locale })) },
+      message: fillLabel(addedTemplate, { count: added, title: product.title }),
+      action: { label: viewBag, onClick: () => router.push(withScope("/cart", { site: site.key, locale: site.locale })) },
     });
   };
 
@@ -59,32 +72,32 @@ export default function ProductPage({ product, department, crumbs, color }: Prod
       <main id="main">
         <Container>
           <div className={styles.product}>
-            <Gallery key={`${product.id}:${selected}`} label={`${product.title} images`} images={images} />
+            <Gallery key={`${product.id}:${selected}`} label={imagesLabel} images={images} />
             <div className={styles.buy}>
               <Breadcrumbs items={crumbs} />
               {product.badge && <Badge tone={product.badge === "New" ? "info" : "sale"}>{product.badge}</Badge>}
               <h1>{product.title}</h1>
-              <Price value={product.price} compareAt={product.compareAt} />
+              <Price value={product.price} compareAt={product.compareAt} locale={site.locale} />
               {colors.length > 0 && (
-                <OptionGroup legend="Color" options={colors} value={selected} onChange={setSelected} />
+                <OptionGroup legend={colorLabel} options={colors} value={selected} onChange={setSelected} />
               )}
               <QuantityInput value={qty} onChange={setQty} min={1} max={10} />
               <div className={styles.actions}>
-                <Button fullWidth onClick={addToBag}>Add to bag</Button>
-                <Button variant="tertiary" onClick={() => show({ tone: "info", message: "Saved to your wishlist." })}>Add to wishlist</Button>
+                <Button fullWidth onClick={addToBag}>{addToBagLabel}</Button>
+                <Button variant="tertiary" onClick={() => show({ tone: "info", message: wishlistSaved })}>{wishlistLabel}</Button>
               </div>
               <Accordion
                 defaultValue={["details"]}
                 items={[
                   {
                     id: "details",
-                    title: "Product details",
+                    title: detailsTitle,
                     content: <p>{product.alt}</p>,
                   },
                   {
                     id: "shipping",
-                    title: "Shipping & returns",
-                    content: <p>Standard shipping arrives in 3 to 7 business days. Most items can be returned within 60 days.</p>,
+                    title: shippingTitle,
+                    content: <p>{shippingNote}</p>,
                   },
                 ]}
               />

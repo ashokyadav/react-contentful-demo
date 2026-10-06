@@ -2,6 +2,7 @@ import * as React from "react";
 import { IconError } from "@myproject/icons";
 import { cx } from "../../utils/cx";
 import s from "./Form.module.scss";
+import { useLabel } from "../Labels/Labels";
 
 /* ---------------- Form ---------------- */
 
@@ -49,14 +50,15 @@ export interface ErrorSummaryProps {
 
 /** Shown at the top of a form after a failed submit. Receives focus so the problem list is read out. */
 export const ErrorSummary = React.forwardRef<HTMLDivElement, ErrorSummaryProps>(function ErrorSummary(
-  { title = "Fix the following to continue", errors },
+  { title, errors },
   ref
 ) {
   const titleId = React.useId();
+  const fixErrors = useLabel("fixErrors", "Fix the following to continue");
   if (errors.length === 0) return null;
   return (
     <div ref={ref} className={s.summary} tabIndex={-1} role="group" aria-labelledby={titleId}>
-      <h2 id={titleId} className={s.summaryTitle}><IconError size="md" />{title}</h2>
+      <h2 id={titleId} className={s.summaryTitle}><IconError size="md" />{title || fixErrors}</h2>
       <ul>
         {errors.map((e) => (
           <li key={e.fieldId}>

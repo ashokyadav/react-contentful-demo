@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cx } from "../../utils/cx";
+import { useLabel } from "../Labels/Labels";
 import s from "./Gallery.module.scss";
 
 export interface GalleryImage {
@@ -21,6 +22,7 @@ export interface GalleryProps {
  * Thumbnails are a toolbar-like group using aria-pressed so state is announced.
  */
 export function Gallery({ label, images, aspectRatio = "4/5", className }: GalleryProps) {
+  const imageOf = useLabel("imageOf", "Image {current} of {total}");
   const [active, setActive] = React.useState(0);
   const thumbs = React.useRef<Array<HTMLButtonElement | null>>([]);
 
@@ -38,7 +40,7 @@ export function Gallery({ label, images, aspectRatio = "4/5", className }: Galle
       <div className={s.main} style={{ aspectRatio }}>
         <img src={current.src} alt={current.alt} className={s.mainImg} />
         <p className="visually-hidden" aria-live="polite">
-          {`Image ${active + 1} of ${images.length}`}
+          {imageOf.replace("{current}", String(active + 1)).replace("{total}", String(images.length))}
         </p>
       </div>
       <div role="group" aria-label={label} className={s.thumbs}>

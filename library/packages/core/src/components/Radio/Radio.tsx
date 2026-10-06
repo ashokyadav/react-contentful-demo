@@ -2,6 +2,7 @@ import * as React from "react";
 import { ErrorMessage } from "../FormField/FormField";
 import { useControllableState } from "../../utils/useControllableState";
 import { cx } from "../../utils/cx";
+import { useLabel } from "../Labels/Labels";
 import s from "./Choice.module.scss";
 
 interface RadioGroupContextValue {
@@ -39,6 +40,7 @@ export function RadioGroup({
   const [current, setCurrent] = useControllableState(value, defaultValue, onChange);
   const hintId = hint ? `${groupName}-hint` : undefined;
   const errorId = error ? `${groupName}-error` : undefined;
+  const requiredLabel = useLabel("required", " (required)");
   return (
     <RadioGroupContext.Provider value={{ name: groupName, value: current, setValue: setCurrent, disabled, required, invalid: Boolean(error) }}>
       <fieldset
@@ -48,7 +50,7 @@ export function RadioGroup({
       >
         <legend className={s.legend}>
           {legend}
-          {required && <span className={s.required}><span aria-hidden="true"> *</span><span className="visually-hidden"> (required)</span></span>}
+          {required && <span className={s.required}><span aria-hidden="true"> *</span><span className="visually-hidden">{requiredLabel}</span></span>}
         </legend>
         {hint && <p id={hintId} className={s.hint}>{hint}</p>}
         <div className={cx(s.options, orientation === "horizontal" && s.horizontal)}>{children}</div>

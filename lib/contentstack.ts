@@ -1161,6 +1161,7 @@ export type StoreChrome = {
   offers: { label: string; links: { label: string; href: string }[] }[];
   suggestions: { value: string; label: string; description: string }[];
   notes: Record<string, string>;
+  labels: Record<string, string>;
 };
 
 export const emptyChrome: StoreChrome = {
@@ -1185,6 +1186,7 @@ export const emptyChrome: StoreChrome = {
   offers: [],
   suggestions: [],
   notes: {},
+  labels: {},
 };
 
 type CsChrome = {
@@ -1210,6 +1212,7 @@ type CsChrome = {
   offers?: { label?: string; links?: { label?: string; href?: string }[] }[];
   suggestions?: { value?: string; label?: string; description?: string }[];
   notes?: { note_id?: string; text?: string }[];
+  labels?: { key?: string; text?: string }[];
 };
 
 function chromeOf(entry: CsChrome | undefined, scope: StoreScope = {}): StoreChrome {
@@ -1239,6 +1242,7 @@ function chromeOf(entry: CsChrome | undefined, scope: StoreScope = {}): StoreChr
     }),
     suggestions: (entry.suggestions ?? []).flatMap((item) => (item.value && item.label ? [{ value: item.value.startsWith("/") ? withScope(item.value, scope) : item.value, label: item.label, description: textOf(item.description) }] : [])),
     notes: Object.fromEntries((entry.notes ?? []).flatMap((note) => (note.note_id ? [[note.note_id, textOf(note.text)]] : []))),
+    labels: Object.fromEntries((entry.labels ?? []).flatMap((item) => (item.key && item.text ? [[item.key, textOf(item.text)]] : []))),
   };
 }
 

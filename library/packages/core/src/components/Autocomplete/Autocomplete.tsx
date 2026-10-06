@@ -2,6 +2,7 @@ import * as React from "react";
 import { FormField } from "../FormField/FormField";
 import type { FieldBaseProps } from "../TextInput/TextInput";
 import { cx } from "../../utils/cx";
+import { useLabel } from "../Labels/Labels";
 import f from "../FormField/FormField.module.scss";
 import s from "./Autocomplete.module.scss";
 
@@ -32,7 +33,7 @@ const defaultFilter = (o: AutocompleteOption, q: string) => o.label.toLowerCase(
 /** WAI-ARIA APG combobox (list autocomplete, manual selection). */
 export function Autocomplete({
   label, hint, error, hideLabel, fieldClassName, options, filter = defaultFilter, value, onChange, onInputChange,
-  placeholder, required, disabled, id, emptyMessage = "No matches", maxResults = 8,
+  placeholder, required, disabled, id, emptyMessage, maxResults = 8,
 }: AutocompleteProps) {
   const [query, setQuery] = React.useState(value?.label ?? "");
   const [open, setOpen] = React.useState(false);
@@ -46,6 +47,9 @@ export function Autocomplete({
     () => (query ? options.filter((o) => filter(o, query)) : options).slice(0, maxResults),
     [options, query, filter, maxResults]
   );
+  const noMatches = useLabel("noMatches", "No matches");
+  const suggestions = useLabel("suggestions", "{count} suggestions available. Use up and down arrows to review.", { count: results.length });
+  const empty = emptyMessage || noMatches;
 
   const select = (o: AutocompleteOption) => {
     setQuery(o.label);
@@ -129,10 +133,10 @@ export function Autocomplete({
                 {o.description && <span className={s.description}>{o.description}</span>}
               </li>
             ))}
-            {expanded && results.length === 0 && <li className={s.empty} role="presentation">{emptyMessage}</li>}
+            {expanded && results.length === 0 && <li className={s.empty} role="presentation">{empty}</li>}
           </ul>
           <span id={statusId} className="visually-hidden" aria-live="polite">
-            {expanded && query ? (results.length ? `${results.length} suggestions available. Use up and down arrows to review.` : emptyMessage) : ""}
+            {expanded && query ? (results.length ? suggestions : empty) : ""}
           </span>
         </div>
       )}

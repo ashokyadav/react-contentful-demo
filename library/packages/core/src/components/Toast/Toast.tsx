@@ -1,6 +1,7 @@
 import * as React from "react";
 import { createPortal } from "react-dom";
 import { IconClose } from "@myproject/icons";
+import { useLabel } from "../Labels/Labels";
 import { toneIcon } from "../Alert/Alert";
 import { cx } from "../../utils/cx";
 import type { Tone } from "../../utils/types";
@@ -28,7 +29,9 @@ export function useToast() {
   return ctx;
 }
 
-export function ToastProvider({ children, label = "Notifications" }: { children: React.ReactNode; label?: string }) {
+export function ToastProvider({ children, label }: { children: React.ReactNode; label?: string }) {
+  const notifications = useLabel("notifications", "Notifications");
+  const regionLabel = label || notifications;
   const [toasts, setToasts] = React.useState<ToastRecord[]>([]);
   const [mounted, setMounted] = React.useState(false);
   const regionRef = React.useRef<HTMLElement>(null);
@@ -75,7 +78,7 @@ export function ToastProvider({ children, label = "Notifications" }: { children:
   }, [toasts, mounted]);
 
   const region = (
-    <section ref={regionRef} aria-label={label} className={s.region}>
+    <section ref={regionRef} aria-label={regionLabel} className={s.region}>
       <div aria-live="polite" aria-relevant="additions">
         <ol className={s.list}>
           {toasts.filter((toast) => !toast.slot).map((t) => <ToastItem key={t.id} toast={t} onDismiss={() => dismiss(t.id)} />)}
@@ -113,6 +116,7 @@ export function ToastAnchor({ id }: { id: string }) {
 }
 
 function ToastItem({ toast, onDismiss }: { toast: ToastRecord; onDismiss: () => void }) {
+  const dismiss = useLabel("dismiss", "Dismiss notification");
   const tone = toast.tone ?? "info";
   const duration = toast.duration ?? (tone === "error" ? 0 : 6000);
   const [paused, setPaused] = React.useState(false);
@@ -145,7 +149,7 @@ function ToastItem({ toast, onDismiss }: { toast: ToastRecord; onDismiss: () => 
         </button>
       )}
       <button type="button" className={s.close} onClick={onDismiss}>
-        <IconClose size="sm" /><span className="visually-hidden">Dismiss notification</span>
+        <IconClose size="sm" /><span className="visually-hidden">{dismiss}</span>
       </button>
     </li>
   );

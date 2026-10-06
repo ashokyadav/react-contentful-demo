@@ -2,6 +2,7 @@ import * as React from "react";
 import { Image } from "../Image/Image";
 import { useControllableState } from "../../utils/useControllableState";
 import { cx } from "../../utils/cx";
+import { useLabel } from "../Labels/Labels";
 import s from "./MegaMenu.module.scss";
 
 export interface MegaMenuLink {
@@ -48,7 +49,7 @@ export interface MegaMenuProps {
  * Escape closes it.
  */
 export function MegaMenu({
-  label = "Departments",
+  label,
   items,
   value,
   defaultValue = null,
@@ -61,6 +62,8 @@ export function MegaMenu({
   const rootRef = React.useRef<HTMLDivElement>(null);
   const suppressFocus = React.useRef(false);
   const openItem = items.find((item) => item.id === active && item.columns?.length);
+  const departments = useLabel("departments", "Departments");
+  const viewAll = useLabel("viewAll", "All {label}", { label: openItem?.label ?? "" });
 
   const close = () => setActive(null);
 
@@ -85,7 +88,7 @@ export function MegaMenu({
         if (!event.currentTarget.contains(event.relatedTarget as Node | null)) close();
       }}
     >
-      <ul className={s.links} aria-label={label}>
+      <ul className={s.links} aria-label={label || departments}>
         {items.map((item) => {
           const hasPanel = Boolean(item.columns?.length);
           const expanded = active === item.id;
@@ -132,7 +135,7 @@ export function MegaMenu({
                   </ul>
                 </div>
               ))}
-              <LinkTag href={openItem.href} className={s.viewAll}>All {openItem.label}</LinkTag>
+              <LinkTag href={openItem.href} className={s.viewAll}>{viewAll}</LinkTag>
             </div>
             {openItem.features && openItem.features.length > 0 && (
               <div className={s.features}>

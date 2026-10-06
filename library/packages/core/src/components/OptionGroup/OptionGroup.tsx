@@ -2,6 +2,7 @@ import * as React from "react";
 import { ErrorMessage } from "../FormField/FormField";
 import { useControllableState } from "../../utils/useControllableState";
 import { cx } from "../../utils/cx";
+import { useLabel } from "../Labels/Labels";
 import s from "./OptionGroup.module.scss";
 
 export interface OptionItem {
@@ -42,6 +43,7 @@ export function OptionGroup({
   const groupName = name ?? `option-${auto}`;
   const [current, setCurrent] = useControllableState(value, defaultValue, onChange);
   const selected = options.find((o) => o.value === current);
+  const requiredLabel = useLabel("required", " (required)");
   const hintId = hint ? `${groupName}-hint` : undefined;
   const errorId = error ? `${groupName}-error` : undefined;
   return (
@@ -54,7 +56,7 @@ export function OptionGroup({
         {showValue && (selected || placeholder) && (
           <span className={s.chosen}>{selected ? selected.label : placeholder}</span>
         )}
-        {required && <span className={s.required}><span aria-hidden="true"> *</span><span className="visually-hidden"> (required)</span></span>}
+        {required && <span className={s.required}><span aria-hidden="true"> *</span><span className="visually-hidden">{requiredLabel}</span></span>}
       </legend>
       {hint && <p id={hintId} className={s.hint}>{hint}</p>}
       <div className={s.options} role="presentation">

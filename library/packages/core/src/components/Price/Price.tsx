@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cx } from "../../utils/cx";
+import { useLabel } from "../Labels/Labels";
 import s from "./Price.module.scss";
 
 export interface PriceProps {
@@ -27,10 +28,14 @@ export function Price({ value, compareAt, currency = "USD", locale = "en-US", cl
   const onSale = compareAt !== undefined && compareAt > value;
   const current = format(value, currency, locale);
   const previous = onSale ? format(compareAt, currency, locale) : undefined;
+  const salePrice = useLabel("salePrice", "Sale price {current}, original price {previous}", {
+    current,
+    previous: previous || "",
+  });
   return (
     <p className={cx(s.price, className)}>
       <span className="visually-hidden">
-        {previous ? `Sale price ${current}, original price ${previous}` : current}
+        {previous ? salePrice : current}
       </span>
       <span aria-hidden="true" className={s.current}>{current}</span>
       {previous && <s aria-hidden="true" className={s.compare}>{previous}</s>}

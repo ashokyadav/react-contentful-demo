@@ -17,6 +17,7 @@ export type { ToggleProps } from "./components/Toggle/Toggle";
 // Layout
 export { Container, Grid, GridItem, Flex, Header, Footer, Sidebar, Navigation } from "./components/Layout/Layout";
 export type { ContainerProps, GridProps, FlexProps, HeaderProps, SidebarProps, NavigationProps, NavigationItem } from "./components/Layout/Layout";
+export { LabelProvider, useLabel } from "./components/Labels/Labels";
 export { SiteTheme, siteThemeStyle, emptySiteTheme } from "./components/SiteTheme/SiteTheme";
 export type { SiteThemeValue } from "./components/SiteTheme/SiteTheme";
 export { PanelGrid } from "./components/PanelGrid/PanelGrid";

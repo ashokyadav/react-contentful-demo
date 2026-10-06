@@ -1,6 +1,7 @@
 import * as React from "react";
 import { IconChevronLeft, IconChevronRight, IconPause, IconPlay } from "@myproject/icons";
 import { cx } from "../../utils/cx";
+import { useLabel } from "../Labels/Labels";
 import s from "./Carousel.module.scss";
 
 export interface CarouselProps {
@@ -75,12 +76,23 @@ export function Carousel({ label, children, visibleCount = 5, autoPlayInterval, 
 
   const atStart = maxIndex === 0 || (!loop && index === 0);
   const atEnd = maxIndex === 0 || (!loop && index === maxIndex);
+  const carouselLabel = useLabel("carousel", "carousel");
+  const slideRole = useLabel("slideRole", "slide");
+  const stopSlides = useLabel("stopSlides", "Stop automatic slide show");
+  const startSlides = useLabel("startSlides", "Start automatic slide show");
+  const previousSlide = useLabel("previousSlide", "Previous slide");
+  const nextSlide = useLabel("nextSlide", "Next slide");
+  const chooseSlide = useLabel("chooseSlide", "Choose slide");
+  const slideOf = useLabel("slideOf", "{current} of {total}");
+  const slideName = useLabel("slide", "Slide {n}");
+  const text = (template: string, values: Record<string, string | number>) =>
+    template.replace(/\{(\w+)\}/g, (_, name) => String(values[name] ?? ""));
 
   return (
     <section
       ref={rootRef}
       className={cx(s.carousel, className)}
-      aria-roledescription="carousel"
+      aria-roledescription={carouselLabel}
       aria-label={label}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -93,16 +105,16 @@ export function Carousel({ label, children, visibleCount = 5, autoPlayInterval, 
         {autoPlayInterval && (
           <button type="button" className={s.button} onClick={() => setPlaying((p) => !p)}>
             {playing ? <IconPause size="sm" /> : <IconPlay size="sm" />}
-            <span className="visually-hidden">{playing ? "Stop automatic slide show" : "Start automatic slide show"}</span>
+            <span className="visually-hidden">{playing ? stopSlides : startSlides}</span>
           </button>
         )}
         <button type="button" className={s.button} onClick={() => go(index - 1)} disabled={atStart} aria-controls={`${id}-slides`}>
           <IconChevronLeft size="sm" />
-          <span className="visually-hidden">Previous slide</span>
+          <span className="visually-hidden">{previousSlide}</span>
         </button>
         <button type="button" className={s.button} onClick={() => go(index + 1)} disabled={atEnd} aria-controls={`${id}-slides`}>
           <IconChevronRight size="sm" />
-          <span className="visually-hidden">Next slide</span>
+          <span className="visually-hidden">{nextSlide}</span>
         </button>
       </div>
 
@@ -115,8 +127,8 @@ export function Carousel({ label, children, visibleCount = 5, autoPlayInterval, 
               className={s.slide}
               style={{ flexBasis: `${100 / pageSize}%` }}
               role="group"
-              aria-roledescription="slide"
-              aria-label={`${i + 1} of ${count}`}
+              aria-roledescription={slideRole}
+              aria-label={text(slideOf, { current: i + 1, total: count })}
               aria-hidden={i < index || i >= index + pageSize}
               ref={(el) => { slideRefs.current[i] = el; }}
             >
@@ -126,7 +138,7 @@ export function Carousel({ label, children, visibleCount = 5, autoPlayInterval, 
         </div>
       </div>
 
-      <div className={s.picker} role="group" aria-label="Choose slide">
+      <div className={s.picker} role="group" aria-label={chooseSlide}>
         {Array.from({ length: maxIndex + 1 }, (_, i) => (
           <button
             key={i}
@@ -136,7 +148,7 @@ export function Carousel({ label, children, visibleCount = 5, autoPlayInterval, 
             aria-controls={`${id}-slides`}
             onClick={() => go(i)}
           >
-            <span className="visually-hidden">Slide {i + 1}</span>
+            <span className="visually-hidden">{text(slideName, { n: i + 1 })}</span>
           </button>
         ))}
       </div>

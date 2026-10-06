@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cx } from "../../utils/cx";
+import { useLabel } from "../Labels/Labels";
 import type { Size } from "../../utils/types";
 import s from "./Button.module.scss";
 
@@ -20,7 +21,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
     variant = "primary",
     size = "md",
     loading = false,
-    loadingLabel = "Loading",
+    loadingLabel,
     fullWidth,
     iconStart,
     iconEnd,
@@ -33,6 +34,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
   },
   ref
 ) {
+  const loadingText = useLabel("loading", "Loading");
+  const announced = loadingLabel || loadingText;
   return (
     <button
       ref={ref}
@@ -55,7 +58,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
       {iconStart && <span className={s.icon} aria-hidden="true">{iconStart}</span>}
       <span className={s.label}>{children}</span>
       {iconEnd && <span className={s.icon} aria-hidden="true">{iconEnd}</span>}
-      {loading && <span className="visually-hidden">, {loadingLabel}</span>}
+      {loading && <span className="visually-hidden">, {announced}</span>}
     </button>
   );
 });

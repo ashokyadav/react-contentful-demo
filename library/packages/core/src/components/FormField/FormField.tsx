@@ -2,6 +2,7 @@ import * as React from "react";
 import { IconError } from "@myproject/icons";
 import { cx } from "../../utils/cx";
 import s from "./FormField.module.scss";
+import { useLabel } from "../Labels/Labels";
 
 /* ---------------- Context ---------------- */
 
@@ -31,13 +32,14 @@ export interface LabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> 
 }
 
 export function Label({ required, hidden, className, children, ...rest }: LabelProps) {
+  const requiredLabel = useLabel("required", " (required)");
   return (
     <label className={cx(s.label, hidden && "visually-hidden", className)} {...rest}>
       {children}
       {required && (
         <span className={s.required}>
           <span aria-hidden="true"> *</span>
-          <span className="visually-hidden"> (required)</span>
+          <span className="visually-hidden">{requiredLabel}</span>
         </span>
       )}
     </label>
@@ -55,12 +57,13 @@ export interface ErrorMessageProps extends React.HTMLAttributes<HTMLParagraphEle
  * control's aria-describedby when focus returns to it, or by an ErrorSummary on submit.
  */
 export function ErrorMessage({ className, children, ...rest }: ErrorMessageProps) {
+  const errorPrefix = useLabel("errorPrefix", "Error: ");
   if (!children) return null;
   return (
     <p className={cx(s.error, className)} {...rest}>
       <IconError size="sm" />
       <span>
-        <span className="visually-hidden">Error: </span>
+        <span className="visually-hidden">{errorPrefix}</span>
         {children}
       </span>
     </p>

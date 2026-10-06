@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cx } from "../../utils/cx";
+import { useLabel } from "../Labels/Labels";
 import s from "./Breadcrumbs.module.scss";
 
 export interface Crumb {
@@ -15,9 +16,10 @@ export interface BreadcrumbsProps {
   className?: string;
 }
 
-export function Breadcrumbs({ items, label = "Breadcrumb", linkComponent: LinkTag = "a", className }: BreadcrumbsProps) {
+export function Breadcrumbs({ items, label, linkComponent: LinkTag = "a", className }: BreadcrumbsProps) {
+  const breadcrumb = useLabel("breadcrumb", "Breadcrumb");
   return (
-    <nav aria-label={label} className={cx(s.breadcrumbs, className)}>
+    <nav aria-label={label || breadcrumb} className={cx(s.breadcrumbs, className)}>
       <ol>
         {items.map((c, i) => {
           const last = i === items.length - 1;

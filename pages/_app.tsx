@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import App, { type AppContext, type AppProps } from "next/app";
-import { SiteTheme, ToastProvider, type MegaMenuItem } from "@myproject/core";
+import { LabelProvider, SiteTheme, ToastProvider, type MegaMenuItem } from "@myproject/core";
 import { CartProvider } from "../components/CartStore";
 import { ChromeProvider } from "../components/ChromeContent";
 import { FooterProvider } from "../components/FooterContent";
@@ -35,6 +35,7 @@ export default function StoreApp({ Component, pageProps, menuItems, menuLabel, f
   return (
     <SiteTheme theme={site}>
       <SiteProvider site={site}>
+        <LabelProvider labels={chrome.labels}>
         <ToastProvider>
           <CartProvider>
             <MenuProvider items={menuItems} label={menuLabel}>
@@ -46,6 +47,7 @@ export default function StoreApp({ Component, pageProps, menuItems, menuLabel, f
             </MenuProvider>
           </CartProvider>
         </ToastProvider>
+        </LabelProvider>
       </SiteProvider>
     </SiteTheme>
   );

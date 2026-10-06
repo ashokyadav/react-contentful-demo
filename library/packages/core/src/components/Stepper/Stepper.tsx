@@ -1,6 +1,7 @@
 import * as React from "react";
 import { IconCheck } from "@myproject/icons";
 import { cx } from "../../utils/cx";
+import { useLabel } from "../Labels/Labels";
 import s from "./Stepper.module.scss";
 
 export interface Step {
@@ -19,9 +20,12 @@ export interface StepperProps {
 }
 
 /** Progress through a multi-step flow such as checkout. */
-export function Stepper({ steps, current, label = "Checkout progress", linkComponent: LinkTag = "a", className }: StepperProps) {
+export function Stepper({ steps, current, label, linkComponent: LinkTag = "a", className }: StepperProps) {
+  const progress = useLabel("checkoutProgress", "Checkout progress");
+  const completed = useLabel("completed", " (completed)");
+  const notStarted = useLabel("notStarted", " (not started)");
   return (
-    <nav aria-label={label} className={cx(s.stepper, className)}>
+    <nav aria-label={label || progress} className={cx(s.stepper, className)}>
       <ol>
         {steps.map((step, i) => {
           const state = i < current ? "complete" : i === current ? "current" : "upcoming";
@@ -30,8 +34,8 @@ export function Stepper({ steps, current, label = "Checkout progress", linkCompo
               <span className={s.marker} aria-hidden="true">{state === "complete" ? <IconCheck size="sm" /> : i + 1}</span>
               <span className={s.label}>
                 {step.label}
-                {state === "complete" && <span className="visually-hidden"> (completed)</span>}
-                {state === "upcoming" && <span className="visually-hidden"> (not started)</span>}
+                {state === "complete" && <span className="visually-hidden">{completed}</span>}
+                {state === "upcoming" && <span className="visually-hidden">{notStarted}</span>}
               </span>
             </>
           );

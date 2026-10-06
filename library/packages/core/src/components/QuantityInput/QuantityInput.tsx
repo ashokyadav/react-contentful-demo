@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useControllableState } from "../../utils/useControllableState";
 import { cx } from "../../utils/cx";
+import { useLabel } from "../Labels/Labels";
 import s from "./QuantityInput.module.scss";
 
 export interface QuantityInputProps {
@@ -26,7 +27,7 @@ function clamp(n: number, min: number, max?: number) {
  * The number can also be typed. Decrease and increase announce the new quantity.
  */
 export function QuantityInput({
-  label = "Quantity",
+  label,
   value,
   defaultValue = 1,
   onChange,
@@ -41,6 +42,10 @@ export function QuantityInput({
   const [announcement, setAnnouncement] = React.useState("");
   const autoId = React.useId();
   const id = idProp ?? `qty-${autoId}`;
+  const quantity = useLabel("quantity", "Quantity");
+  const name = label || quantity;
+  const decrease = useLabel("decrease", "Decrease {label}", { label: name.toLowerCase() });
+  const increase = useLabel("increase", "Increase {label}", { label: name.toLowerCase() });
 
   React.useEffect(() => {
     setText(String(current));
@@ -50,12 +55,12 @@ export function QuantityInput({
     const clamped = clamp(next, min, max);
     setCurrent(clamped);
     setText(String(clamped));
-    if (announce) setAnnouncement(`${label} ${clamped}`);
+    if (announce) setAnnouncement(`${name} ${clamped}`);
   };
 
   return (
     <div className={cx(s.field, className)}>
-      <label htmlFor={id} className={s.label}>{label}</label>
+      <label htmlFor={id} className={s.label}>{name}</label>
       <div className={s.control}>
         <button
           type="button"
@@ -64,7 +69,7 @@ export function QuantityInput({
           disabled={disabled || current <= min}
         >
           <span aria-hidden="true">−</span>
-          <span className="visually-hidden">{`Decrease ${label.toLowerCase()}`}</span>
+          <span className="visually-hidden">{decrease}</span>
         </button>
         <input
           id={id}
@@ -93,7 +98,7 @@ export function QuantityInput({
           disabled={disabled || (max !== undefined && current >= max)}
         >
           <span aria-hidden="true">+</span>
-          <span className="visually-hidden">{`Increase ${label.toLowerCase()}`}</span>
+          <span className="visually-hidden">{increase}</span>
         </button>
       </div>
       <span className="visually-hidden" aria-live="polite">{announcement}</span>

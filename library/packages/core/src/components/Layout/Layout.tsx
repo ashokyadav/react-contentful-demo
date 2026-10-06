@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cx } from "../../utils/cx";
+import { useLabel } from "../Labels/Labels";
 import s from "./Layout.module.scss";
 
 type Space = "none" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
@@ -100,9 +101,10 @@ export interface HeaderProps extends React.HTMLAttributes<HTMLElement> {
 
 /** Page banner landmark with a built-in skip link (WCAG 2.4.1). */
 export function Header({ sticky, mainContentId = "main-content", className, children, ...rest }: HeaderProps) {
+  const skip = useLabel("skip", "Skip to main content");
   return (
     <>
-      <a href={`#${mainContentId}`} className={s.skipLink}>Skip to main content</a>
+      <a href={`#${mainContentId}`} className={s.skipLink}>{skip}</a>
       <header className={cx(s.header, sticky && s.sticky, className)} {...rest}>{children}</header>
     </>
   );

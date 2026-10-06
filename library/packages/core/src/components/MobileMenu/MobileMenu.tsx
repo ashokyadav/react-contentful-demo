@@ -3,6 +3,7 @@ import { IconChevronLeft, IconChevronRight, IconMenu, IconSearch } from "@myproj
 import { useControllableState } from "../../utils/useControllableState";
 import { cx } from "../../utils/cx";
 import { Button } from "../Button/Button";
+import { useLabel } from "../Labels/Labels";
 import { List, ListItem } from "../List/List";
 import { Modal } from "../Modal/Modal";
 import type { MegaMenuItem } from "../MegaMenu/MegaMenu";
@@ -54,6 +55,11 @@ export function MobileMenu({
   const [isOpen, setOpen] = useControllableState(open, defaultOpen, onOpenChange);
   const [section, setSection] = React.useState<string | null>(null);
   const active = items.find((item) => item.id === section);
+  const openMenu = useLabel("openMenu", "Open menu");
+  const menuTitle = useLabel("menu", "Menu");
+  const back = useLabel("back", "Back");
+  const search = useLabel("search", "Search");
+  const viewAll = useLabel("viewAll", "All {label}", { label: active?.label ?? "" });
 
   const close = () => {
     setOpen(false);
@@ -71,13 +77,13 @@ export function MobileMenu({
     <div className={cx(s.root, className)}>
       <button type="button" className={s.trigger} aria-expanded={isOpen} aria-haspopup="dialog" onClick={() => setOpen(true)}>
         <IconMenu />
-        <span className="visually-hidden">Open menu</span>
+        <span className="visually-hidden">{openMenu}</span>
       </button>
-      <Modal open={isOpen} onClose={close} placement="fullscreen" title={active ? active.label : "Menu"}>
+      <Modal open={isOpen} onClose={close} placement="fullscreen" title={active ? active.label : menuTitle}>
         {active ? (
           <div className={s.section}>
             <Button variant="tertiary" iconStart={<IconChevronLeft size="sm" />} onClick={() => setSection(null)}>
-              Back
+              {back}
             </Button>
             {active.columns?.map((column) => (
               <div key={column.title}>
@@ -91,7 +97,7 @@ export function MobileMenu({
                 </List>
               </div>
             ))}
-            <a className={s.all} href={active.href} onClick={close}>All {active.label}</a>
+            <a className={s.all} href={active.href} onClick={close}>{viewAll}</a>
           </div>
         ) : (
           <>
@@ -104,7 +110,7 @@ export function MobileMenu({
               }}
             >
               <IconSearch size="sm" />
-              Search
+              {search}
             </button>
             <List variant="plain" className={s.departments}>
               {items.map((item) => (

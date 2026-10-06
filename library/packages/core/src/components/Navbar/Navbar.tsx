@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cx } from "../../utils/cx";
+import { useLabel } from "../Labels/Labels";
 import s from "./Navbar.module.scss";
 
 export interface NavbarLink {
@@ -32,8 +33,9 @@ export interface NavbarProps {
 }
 
 /** Store header: wordmark, department links, and the right-hand actions. */
-export function Navbar({ brand, links = [], navigation, banner, bannerLeading, bannerTrailing, start, menu, actions, label = "Main", linkComponent: LinkTag = "a", className }: NavbarProps) {
+export function Navbar({ brand, links = [], navigation, banner, bannerLeading, bannerTrailing, start, menu, actions, label, linkComponent: LinkTag = "a", className }: NavbarProps) {
   const id = React.useId();
+  const main = useLabel("main", "Main");
 
   return (
     <div className={cx(s.navbar, className)}>
@@ -50,7 +52,7 @@ export function Navbar({ brand, links = [], navigation, banner, bannerLeading, b
         <div className={s.brand}>{brand}</div>
         <div className={s.actions}>{actions}</div>
       </div>
-      <nav aria-label={label}>
+      <nav aria-label={label || main}>
         <div className={s.navRow}>
           {navigation ?? (
             <ul id={`${id}-links`} className={s.links}>

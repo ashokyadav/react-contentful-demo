@@ -4,6 +4,7 @@ import {
   ArrivalBand,
   Button,
   Carousel,
+  useLabel,
   FeatureBand,
   HeritageNote,
   HeroBanner,
@@ -33,9 +34,10 @@ function go(router: ReturnType<typeof useRouter>, href: string, scope: { site?: 
 function CategoryShortcuts() {
   const site = useSite();
   const { items, label } = useNavigationMenu();
+  const departments = useLabel("departments", "Departments");
   if (!items.length) return null;
   return (
-    <nav className={styles.shortcuts} aria-label={label || "Departments"}>
+    <nav className={styles.shortcuts} aria-label={label || departments}>
       <ul>
         {items.map((item) => {
           const image = item.features?.find((feature) => feature.imageSrc);
