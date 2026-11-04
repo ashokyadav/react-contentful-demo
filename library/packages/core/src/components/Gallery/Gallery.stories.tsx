@@ -9,7 +9,7 @@ const meta: Meta<typeof Gallery> = {
     docs: {
       description: {
         component: `
-A product gallery: one large image and a row of thumbnail buttons. \`label\` names the group ("Product images"). Every image needs an \`alt\`; \`thumbnail\` is optional and falls back to \`src\`. Set \`video\` to play a film in that slide; \`src\` stays the poster.
+A product gallery: one large image and a row of thumbnail buttons. \`label\` names the group ("Product images"). Every image needs an \`alt\`; \`thumbnail\` is optional and falls back to \`src\`. Set \`video\` to play a film in that slide; \`src\` stays the poster. Moving over a photo magnifies that spot. Zoom opens a closer view with zoom in and zoom out. Video slides do not zoom.
 
 Arrow keys move between thumbnails. The selected thumbnail is announced, and a live region announces which image is showing.
 
