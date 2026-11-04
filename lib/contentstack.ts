@@ -695,6 +695,14 @@ export async function getHomePage(scopeOrPreview?: StoreScope | string): Promise
   };
 }
 
+export type StoreSizeGuide = {
+  title: string;
+  action: string;
+  note: string;
+  columns: string[];
+  rows: string[][];
+};
+
 export type StoreProduct = {
   id: string;
   title: string;
@@ -708,6 +716,7 @@ export type StoreProduct = {
   swatches: StoreSwatch[];
   badge?: string;
   newest: number;
+  sizeGuide?: StoreSizeGuide;
 };
 
 export type StoreCategory = {
@@ -759,6 +768,13 @@ type CsProduct = {
   sites?: SiteRef[];
   badge?: string;
   rank?: number;
+  size_guide?: {
+    title?: string;
+    action?: string;
+    note?: string;
+    columns?: string[] | string;
+    rows?: { cells?: string[] | string }[];
+  };
 };
 
 type CsCategoryBlock = {
@@ -831,11 +847,30 @@ function swatchesOf(entry: CsProduct): StoreSwatch[] {
   return hexes.flatMap((value) => (typeof value === "string" && value.trim() ? [{ label: value.trim(), value: value.trim() }] : []));
 }
 
+function textList(value: string[] | string | undefined) {
+  const list = Array.isArray(value) ? value : value ? [value] : [];
+  return list.flatMap((item) => (typeof item === "string" && item.trim() ? [item.trim()] : []));
+}
+
+function sizeGuideOf(entry: CsProduct): StoreSizeGuide | undefined {
+  const guide = entry.size_guide;
+  if (!guide) return undefined;
+  const title = guide.title?.trim() || "";
+  const columns = textList(guide.columns);
+  const rows = (guide.rows ?? []).flatMap((row) => {
+    const cells = textList(row.cells);
+    return cells.length ? [cells] : [];
+  });
+  if (!title || !columns.length || !rows.length) return undefined;
+  return { title, action: guide.action?.trim() || title, note: guide.note?.trim() || "", columns, rows };
+}
+
 function productOf(entry: CsProduct): StoreProduct | null {
   const image = assetUrl(entry.image);
   if (!entry.uid || !entry.title || !entry.url || !image || typeof entry.price !== "number") return null;
   const alt = entry.image_alt || entry.title;
   const swatches = swatchesOf(entry);
+  const sizeGuide = sizeGuideOf(entry);
   return {
     id: entry.uid,
     title: entry.title,
@@ -849,6 +884,7 @@ function productOf(entry: CsProduct): StoreProduct | null {
     swatches,
     ...(entry.badge ? { badge: entry.badge } : {}),
     newest: entry.rank || 0,
+    ...(sizeGuide ? { sizeGuide } : {}),
   };
 }
 

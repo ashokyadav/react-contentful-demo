@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { Accordion, Badge, Breadcrumbs, Button, Container, Gallery, OptionGroup, Price, QuantityInput, ToastAnchor, useLabel, useToast } from "@myproject/core";
+import { Accordion, Badge, Breadcrumbs, Button, Container, Gallery, Modal, OptionGroup, Price, QuantityInput, Table, ToastAnchor, useLabel, useToast } from "@myproject/core";
 import { useCart } from "../../components/CartStore";
 import { PageMeta } from "../../components/PageMeta";
 import { SiteFrame } from "../../components/SiteFrame";
@@ -24,6 +24,7 @@ export default function ProductPage({ product, department, crumbs, color }: Prod
   const initial = product.swatches.find((swatch) => swatch.value === color)?.value || product.swatches[0]?.value || "";
   const [selected, setSelected] = useState(initial);
   const [qty, setQty] = useState(1);
+  const [guideOpen, setGuideOpen] = useState(false);
   const colors = product.swatches.map((swatch) => ({ value: swatch.value, label: swatch.label, swatch: swatch.value }));
 
   const chosen = product.swatches.find((swatch) => swatch.value === selected);
@@ -81,6 +82,11 @@ export default function ProductPage({ product, department, crumbs, color }: Prod
               {colors.length > 0 && (
                 <OptionGroup legend={colorLabel} options={colors} value={selected} onChange={setSelected} />
               )}
+              {product.sizeGuide && (
+                <Button variant="tertiary" className={styles.sizeGuide} onClick={() => setGuideOpen(true)}>
+                  {product.sizeGuide.action}
+                </Button>
+              )}
               <QuantityInput value={qty} onChange={setQty} min={1} max={10} />
               <div className={styles.actions}>
                 <Button fullWidth onClick={addToBag}>{addToBagLabel}</Button>
@@ -105,6 +111,22 @@ export default function ProductPage({ product, department, crumbs, color }: Prod
             </div>
           </div>
         </Container>
+        {product.sizeGuide && (
+          <Modal open={guideOpen} onClose={() => setGuideOpen(false)} title={product.sizeGuide.title} description={product.sizeGuide.note} size="lg">
+            <Table
+              caption={product.sizeGuide.title}
+              hideCaption
+              columns={product.sizeGuide.columns.map((header, index) => ({
+                key: String(index),
+                header,
+                cell: (row: string[]) => row[index] || "",
+                ...(index === 0 ? { rowHeader: true } : {}),
+              }))}
+              rows={product.sizeGuide.rows}
+              getRowKey={(row) => row.join("|")}
+            />
+          </Modal>
+        )}
       </main>
     </SiteFrame>
   );

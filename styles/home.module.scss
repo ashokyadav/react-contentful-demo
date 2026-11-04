@@ -249,6 +249,14 @@ header.siteHeader {
   font-size: var(--font-size-sm);
 }
 
+.buy .sizeGuide {
+  justify-content: flex-start;
+  width: fit-content;
+  min-height: 44px;
+  margin-top: var(--spacing-sm);
+  padding-inline: 0;
+}
+
 .actions {
   display: flex;
   flex-direction: column;
