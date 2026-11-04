@@ -9,7 +9,7 @@ const meta: Meta<typeof Gallery> = {
     docs: {
       description: {
         component: `
-A product gallery: one large image and a row of thumbnail buttons. \`label\` names the group ("Product images"). Every image needs an \`alt\`; \`thumbnail\` is optional and falls back to \`src\`.
+A product gallery: one large image and a row of thumbnail buttons. \`label\` names the group ("Product images"). Every image needs an \`alt\`; \`thumbnail\` is optional and falls back to \`src\`. Set \`video\` to play a film in that slide; \`src\` stays the poster.
 
 Arrow keys move between thumbnails. The selected thumbnail is announced, and a live region announces which image is showing.
 
@@ -37,6 +37,19 @@ export const ProductGallery: Story = {
       { src: u("Product16.png"), alt: "Olive bomber jacket" },
       { src: u("Product17.png"), alt: "Blush pointed heels" },
       { src: u("Product18.png"), alt: "Blush wrap dress" },
+    ],
+  },
+  render: (args) => <div style={{ maxWidth: 560 }}><Gallery {...args} /></div>,
+};
+
+const film = "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
+
+export const WithVideo: Story = {
+  args: {
+    label: "Product images",
+    images: [
+      { src: u("Product17.png"), alt: "Blush pointed heels" },
+      { src: u("Product17.png"), alt: "Pointed heels video", video: film },
     ],
   },
   render: (args) => <div style={{ maxWidth: 560 }}><Gallery {...args} /></div>,

@@ -711,7 +711,7 @@ export type StoreProduct = {
   compareAt?: number;
   image: string;
   alt: string;
-  images: { src: string; alt: string }[];
+  images: { src: string; alt: string; video?: string }[];
   category: string;
   swatches: StoreSwatch[];
   badge?: string;
@@ -775,6 +775,7 @@ type CsProduct = {
     columns?: string[] | string;
     rows?: { cells?: string[] | string }[];
   };
+  video?: { url?: string; title?: string };
 };
 
 type CsCategoryBlock = {
@@ -852,6 +853,12 @@ function textList(value: string[] | string | undefined) {
   return list.flatMap((item) => (typeof item === "string" && item.trim() ? [item.trim()] : []));
 }
 
+function videoOf(entry: CsProduct, title: string): { src: string; title: string } | undefined {
+  const src = entry.video?.url?.trim() || "";
+  if (!src) return undefined;
+  return { src, title: entry.video?.title?.trim() || `${title} video` };
+}
+
 function sizeGuideOf(entry: CsProduct): StoreSizeGuide | undefined {
   const guide = entry.size_guide;
   if (!guide) return undefined;
@@ -871,6 +878,9 @@ function productOf(entry: CsProduct): StoreProduct | null {
   const alt = entry.image_alt || entry.title;
   const swatches = swatchesOf(entry);
   const sizeGuide = sizeGuideOf(entry);
+  const video = videoOf(entry, entry.title);
+  const images: StoreProduct["images"] = galleryOf(entry, entry.title, alt, image);
+  if (video) images.push({ src: image, alt: video.title, video: video.src });
   return {
     id: entry.uid,
     title: entry.title,
@@ -879,7 +889,7 @@ function productOf(entry: CsProduct): StoreProduct | null {
     ...(typeof entry.compare_at === "number" ? { compareAt: entry.compare_at } : {}),
     image,
     alt,
-    images: galleryOf(entry, entry.title, alt, image),
+    images,
     category: entry.category_key || "",
     swatches,
     ...(entry.badge ? { badge: entry.badge } : {}),

@@ -28,7 +28,11 @@ export default function ProductPage({ product, department, crumbs, color }: Prod
   const colors = product.swatches.map((swatch) => ({ value: swatch.value, label: swatch.label, swatch: swatch.value }));
 
   const chosen = product.swatches.find((swatch) => swatch.value === selected);
-  const images = chosen?.image ? [{ src: chosen.image, alt: chosen.alt || product.alt }] : product.images;
+  const film = product.images.find((image) => image.video);
+  const stills = chosen?.image
+    ? [{ src: chosen.image, alt: chosen.alt || product.alt }]
+    : product.images.filter((image) => !image.video);
+  const images = film ? [...stills, film] : stills;
   const colorLabel = useLabel("color", "Color");
   const addToBagLabel = useLabel("addToBag", "Add to bag");
   const wishlistLabel = useLabel("addToWishlist", "Add to wishlist");
