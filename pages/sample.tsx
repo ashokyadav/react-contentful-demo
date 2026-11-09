@@ -2,8 +2,8 @@ import { HeroBanner } from "@myproject/core";
 import { PageMeta } from "../components/PageMeta";
 import { useSite } from "../components/SiteContext";
 import { SiteFrame } from "../components/SiteFrame";
-import { getHomePage, getSite, type StoreHome } from "../lib/contentstack";
-import { persistScope, scopeFor, scopeFrom } from "../lib/scope";
+import { getHomePage, type StoreHome } from "../lib/contentstack";
+import { getGlobalPageData, type PageDataContext } from "../lib/pageData";
 import styles from "../styles/sample.module.scss";
 
 type Props = { hero: StoreHome["hero"] };
@@ -23,11 +23,8 @@ export default function SamplePage({ hero }: Props) {
   );
 }
 
-export async function getServerSideProps(ctx: Parameters<typeof scopeFrom>[0]) {
-  const scope = scopeFrom(ctx);
-  const site = await getSite(scope);
-  const content = scopeFor(scope, site);
-  persistScope(ctx, content);
-  const home = await getHomePage(content).catch(() => null);
-  return { props: { hero: home?.hero ?? null } };
+export async function getServerSideProps(ctx: PageDataContext) {
+  const { global, scope } = await getGlobalPageData(ctx);
+  const home = await getHomePage(scope).catch(() => null);
+  return { props: { global, hero: home?.hero ?? null } };
 }

@@ -18,9 +18,9 @@ import {
 import { cartKey, useCart, type CartLine } from "../components/CartStore";
 import { PayPalButton } from "../components/PayPalButton";
 import { SiteFrame } from "../components/SiteFrame";
-import { fill, getCartPage, getCartPictures, getSite, withScope, type CartPicture, type StoreCart } from "../lib/contentstack";
+import { fill, getCartPage, getCartPictures, withScope, type CartPicture, type StoreCart } from "../lib/contentstack";
 import { writeCheckout } from "../lib/checkoutDraft";
-import { persistScope, scopeFor, scopeFrom } from "../lib/scope";
+import { getGlobalPageData, type PageDataContext } from "../lib/pageData";
 import styles from "../styles/cart.module.scss";
 
 const money = (value: number) =>
@@ -290,13 +290,10 @@ export default function CartPage({ page, pictures = [] }: { page: StoreCart; pic
   );
 }
 
-export async function getServerSideProps(ctx: Parameters<typeof scopeFrom>[0]) {
-  const scope = scopeFrom(ctx);
-  const site = await getSite(scope);
-  const content = scopeFor(scope, site);
-  persistScope(ctx, content);
-  const page = await getCartPage(content);
+export async function getServerSideProps(ctx: PageDataContext) {
+  const { global, scope } = await getGlobalPageData(ctx);
+  const page = await getCartPage(scope);
   if (!page) return { notFound: true };
-  const pictures = await getCartPictures(content);
-  return { props: { page, pictures } };
+  const pictures = await getCartPictures(scope);
+  return { props: { global, page, pictures } };
 }

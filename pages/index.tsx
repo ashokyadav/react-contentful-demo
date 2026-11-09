@@ -19,8 +19,8 @@ import { PageMeta } from "../components/PageMeta";
 import { SiteFrame } from "../components/SiteFrame";
 import { useSite } from "../components/SiteContext";
 import { useNavigationMenu } from "../components/NavigationMenu";
-import { emptyHome, getHomePage, getHomePanels, getSite, withScope, type StoreHome } from "../lib/contentstack";
-import { persistScope, scopeFor, scopeFrom } from "../lib/scope";
+import { emptyHome, getHomePage, getHomePanels, withScope, type StoreHome } from "../lib/contentstack";
+import { getGlobalPageData, type PageDataContext } from "../lib/pageData";
 import styles from "../styles/home.module.scss";
 
 function go(router: ReturnType<typeof useRouter>, href: string, scope: { site?: string; locale?: string }) {
@@ -179,14 +179,19 @@ export default function HomePage({
   );
 }
 
-export async function getServerSideProps(ctx: Parameters<typeof scopeFrom>[0]) {
-  const scope = scopeFrom(ctx);
-  const site = await getSite(scope);
-  const content = scopeFor(scope, site);
-  persistScope(ctx, content);
+export async function getServerSideProps(ctx: PageDataContext) {
+  const { global, scope } = await getGlobalPageData(ctx);
   const [panels, home] = await Promise.all([
-    getHomePanels(content).catch(() => [] as PanelGridItem[]),
-    getHomePage(content).catch(() => emptyHome),
+    getHomePanels(scope).catch(() => [] as PanelGridItem[]),
+    getHomePage(scope).catch(() => emptyHome),
   ]);
-  return { props: { panels, home, carousel: home.heroLayout === "carousel", darkArrivals: site.key === "example1" } };
+  return {
+    props: {
+      global,
+      panels,
+      home,
+      carousel: home.heroLayout === "carousel",
+      darkArrivals: global.site.key === "example1",
+    },
+  };
 }

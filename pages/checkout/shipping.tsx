@@ -19,9 +19,9 @@ import { useCart } from "../../components/CartStore";
 import { PayPalButton } from "../../components/PayPalButton";
 import { useFooter } from "../../components/FooterContent";
 import { useSite } from "../../components/SiteContext";
-import { checkoutStepsFor, fill, getCheckout, getSite, withScope, type StoreCheckout } from "../../lib/contentstack";
+import { checkoutStepsFor, fill, getCheckout, withScope, type StoreCheckout } from "../../lib/contentstack";
 import { readCheckout, writeCheckout } from "../../lib/checkoutDraft";
-import { persistScope, scopeFor, scopeFrom } from "../../lib/scope";
+import { getGlobalPageData, type PageDataContext } from "../../lib/pageData";
 import styles from "../../styles/shipping.module.scss";
 
 const money = (value: number) =>
@@ -246,12 +246,9 @@ export default function ShippingPage({ checkout }: { checkout: StoreCheckout }) 
   );
 }
 
-export async function getServerSideProps(ctx: Parameters<typeof scopeFrom>[0]) {
-  const scope = scopeFrom(ctx);
-  const site = await getSite(scope);
-  const content = scopeFor(scope, site);
-  persistScope(ctx, content);
-  const checkout = await getCheckout(content);
+export async function getServerSideProps(ctx: PageDataContext) {
+  const { global, scope } = await getGlobalPageData(ctx);
+  const checkout = await getCheckout(scope);
   if (!checkout) return { notFound: true };
-  return { props: { checkout } };
+  return { props: { global, checkout } };
 }

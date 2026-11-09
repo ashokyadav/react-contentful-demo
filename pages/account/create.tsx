@@ -13,8 +13,8 @@ import {
 } from "@myproject/core";
 import { SiteFrame } from "../../components/SiteFrame";
 import { createShopper, validEmail } from "../../lib/account";
-import { getAccountPage, getSite, withScope, type AccountCopy } from "../../lib/contentstack";
-import { persistScope, scopeFor, scopeFrom } from "../../lib/scope";
+import { getAccountPage, withScope, type AccountCopy } from "../../lib/contentstack";
+import { getGlobalPageData, type PageDataContext } from "../../lib/pageData";
 import styles from "../../styles/account.module.scss";
 
 type CreateErrors = Partial<Record<"first" | "last" | "email" | "password" | "confirm", string>>;
@@ -96,12 +96,9 @@ export default function CreateAccountPage({ copy }: { copy: AccountCopy }) {
   );
 }
 
-export async function getServerSideProps(ctx: Parameters<typeof scopeFrom>[0]) {
-  const scope = scopeFrom(ctx);
-  const site = await getSite(scope);
-  const content = scopeFor(scope, site);
-  persistScope(ctx, content);
-  const copy = await getAccountPage(content);
+export async function getServerSideProps(ctx: PageDataContext) {
+  const { global, scope } = await getGlobalPageData(ctx);
+  const copy = await getAccountPage(scope);
   if (!copy) return { notFound: true };
-  return { props: { copy } };
+  return { props: { global, copy } };
 }

@@ -19,9 +19,9 @@ import { IconBag, IconUser } from "@myproject/icons";
 import { SiteFrame } from "../../components/SiteFrame";
 import { currentShopper, signIn, signOut, validEmail, type Shopper } from "../../lib/account";
 import { useSite } from "../../components/SiteContext";
-import { fill, getAccountPage, getCheckout, getSite, withScope, type AccountCopy } from "../../lib/contentstack";
+import { fill, getAccountPage, getCheckout, withScope, type AccountCopy } from "../../lib/contentstack";
 import { listOrders, readOrder, type PlacedOrder } from "../../lib/checkoutDraft";
-import { persistScope, scopeFor, scopeFrom } from "../../lib/scope";
+import { getGlobalPageData, type PageDataContext } from "../../lib/pageData";
 import styles from "../../styles/account.module.scss";
 
 const money = (value: number) =>
@@ -184,12 +184,9 @@ export default function AccountPage({ copy, methods }: { copy: AccountCopy; meth
   );
 }
 
-export async function getServerSideProps(ctx: Parameters<typeof scopeFrom>[0]) {
-  const scope = scopeFrom(ctx);
-  const site = await getSite(scope);
-  const content = scopeFor(scope, site);
-  persistScope(ctx, content);
-  const [copy, checkout] = await Promise.all([getAccountPage(content), getCheckout(content)]);
+export async function getServerSideProps(ctx: PageDataContext) {
+  const { global, scope } = await getGlobalPageData(ctx);
+  const [copy, checkout] = await Promise.all([getAccountPage(scope), getCheckout(scope)]);
   if (!copy || !checkout) return { notFound: true };
-  return { props: { copy, methods: checkout.methods } };
+  return { props: { global, copy, methods: checkout.methods } };
 }

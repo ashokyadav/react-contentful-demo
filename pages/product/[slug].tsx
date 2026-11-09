@@ -5,8 +5,8 @@ import { useCart } from "../../components/CartStore";
 import { PageMeta } from "../../components/PageMeta";
 import { SiteFrame } from "../../components/SiteFrame";
 import { useSite } from "../../components/SiteContext";
-import { getProductPage, getSite, withScope, type StoreProduct } from "../../lib/contentstack";
-import { persistScope, scopeFor, scopeFrom } from "../../lib/scope";
+import { getProductPage, withScope, type StoreProduct } from "../../lib/contentstack";
+import { getGlobalPageData, type PageDataContext } from "../../lib/pageData";
 import styles from "../../styles/home.module.scss";
 
 type ProductPageProps = {
@@ -136,15 +136,12 @@ export default function ProductPage({ product, department, crumbs, color }: Prod
   );
 }
 
-export async function getServerSideProps(ctx: { params?: { slug?: string }; query?: { color?: string | string[] } }) {
+export async function getServerSideProps(ctx: PageDataContext & { params?: { slug?: string } }) {
   const slug = ctx.params?.slug;
   if (!slug || !/^[a-z0-9-]+$/.test(slug)) return { notFound: true };
-  const scope = scopeFrom(ctx);
-  const site = await getSite(scope);
-  const content = scopeFor(scope, site);
-  persistScope(ctx, content);
-  const page = await getProductPage(slug, content);
+  const { global, scope } = await getGlobalPageData(ctx);
+  const page = await getProductPage(slug, scope);
   if (!page) return { notFound: true };
   const requested = typeof ctx.query?.color === "string" ? ctx.query.color : "";
-  return { props: { ...page, color: requested } };
+  return { props: { global, ...page, color: requested } };
 }

@@ -1,17 +1,14 @@
 import { CatalogPage } from "../../components/CatalogPage";
-import { getCategoryPage, getSite, type StoreCatalog } from "../../lib/contentstack";
-import { persistScope, scopeFor, scopeFrom } from "../../lib/scope";
+import { getCategoryPage, type StoreCatalog } from "../../lib/contentstack";
+import { getGlobalPageData, type PageDataContext } from "../../lib/pageData";
 
 export default function MenApparelPage({ catalog }: { catalog: StoreCatalog }) {
   return <CatalogPage catalog={catalog} />;
 }
 
-export async function getServerSideProps(ctx: Parameters<typeof scopeFrom>[0]) {
-  const scope = scopeFrom(ctx);
-  const site = await getSite(scope);
-  const content = scopeFor(scope, site);
-  persistScope(ctx, content);
-  const catalog = await getCategoryPage("/clothing/men-apparel", content);
+export async function getServerSideProps(ctx: PageDataContext) {
+  const { global, scope } = await getGlobalPageData(ctx);
+  const catalog = await getCategoryPage("/clothing/men-apparel", scope);
   if (!catalog) return { notFound: true };
-  return { props: { catalog } };
+  return { props: { global, catalog } };
 }
