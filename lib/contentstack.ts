@@ -1,4 +1,6 @@
+// Delivery comes from Contentful. The exported shapes still match the storefront components.
 import { emptySiteTheme, type MegaMenuItem, type SiteThemeValue } from "@myproject/core";
+import { loadContentfulEntries } from "./contentful";
 
 export type StoreScope = {
   site?: string;
@@ -34,18 +36,6 @@ export function pickScoped<T extends { sites?: SiteRef[] }>(entries: T[], siteUi
     if (specific) return specific;
   }
   return entries.find((entry) => siteIds(entry.sites).length === 0);
-}
-
-function stackHeaders(apiKey: string, token: string, preview: boolean): Record<string, string> {
-  return preview
-    ? { api_key: apiKey, preview_token: token }
-    : { api_key: apiKey, access_token: token };
-}
-
-function applyScope(url: URL, scope?: StoreScope) {
-  const locale = scope?.locale || "en-us";
-  url.searchParams.set("locale", locale);
-  if (scope?.livePreview) url.searchParams.set("live_preview", scope.livePreview);
 }
 
 type CsLink = {
@@ -151,30 +141,12 @@ export function toMegaMenu(entry: CsMenu | undefined, scope: StoreScope = {}): {
 
 export async function getMegaMenu(scopeOrPreview?: StoreScope | string): Promise<{ label?: string; items: MegaMenuItem[] }> {
   const scope = asScope(scopeOrPreview);
-  const apiKey = process.env.CONTENTSTACK_API_KEY;
-  const deliveryToken = process.env.CONTENTSTACK_DELIVERY_TOKEN;
-  const previewToken = process.env.CONTENTSTACK_PREVIEW_TOKEN;
-  if (!apiKey || !deliveryToken) return { items: [] };
-
-  const preview = Boolean(scope.livePreview && previewToken);
-  const host = preview
-    ? process.env.CONTENTSTACK_PREVIEW_HOST || "https://eu-rest-preview.contentstack.com"
-    : process.env.CONTENTSTACK_CDN || "https://eu-cdn.contentstack.com";
-  const headers = stackHeaders(apiKey, preview ? previewToken! : deliveryToken, preview);
+  if (!process.env.CONTENTFUL_SPACE_ID || !process.env.CONTENTFUL_DELIVERY_TOKEN) return { items: [] };
   const siteUid = scope.siteUid || "";
 
   const load = async (locale?: string) => {
-    const url = new URL("/v3/content_types/mega_menu/entries", host);
-    url.searchParams.append("include[]", "departments");
-    applyScope(url, scope);
-    if (locale) url.searchParams.set("locale", locale);
-    const response = await fetch(url, { headers, cache: "no-store" });
-    if (!response.ok) {
-      const detail = await response.text();
-      throw new Error(`Contentstack ${response.status}: ${detail.slice(0, 180)}`);
-    }
-    const body = await response.json() as { entries?: CsMenu[] };
-    return pickScoped(body.entries ?? [], siteUid);
+    const entries = await loadContentfulEntries<CsMenu>("mega_menu", { ...scope, locale: locale || scope.locale });
+    return pickScoped(entries, siteUid);
   };
 
   let entry = await load();
@@ -256,33 +228,14 @@ function footerOf(entry: CsFooter | undefined, items: CsFooterItem[]): StoreFoot
 
 export async function getFooter(scopeOrPreview?: StoreScope | string): Promise<StoreFooter> {
   const scope = asScope(scopeOrPreview);
-  const apiKey = process.env.CONTENTSTACK_API_KEY;
-  const deliveryToken = process.env.CONTENTSTACK_DELIVERY_TOKEN;
-  const previewToken = process.env.CONTENTSTACK_PREVIEW_TOKEN;
-  if (!apiKey || !deliveryToken) return emptyFooter;
+  if (!process.env.CONTENTFUL_SPACE_ID || !process.env.CONTENTFUL_DELIVERY_TOKEN) return emptyFooter;
 
-  const preview = Boolean(scope.livePreview && previewToken);
-  const host = preview
-    ? process.env.CONTENTSTACK_PREVIEW_HOST || "https://eu-rest-preview.contentstack.com"
-    : process.env.CONTENTSTACK_CDN || "https://eu-cdn.contentstack.com";
-  const headers = stackHeaders(apiKey, preview ? previewToken! : deliveryToken, preview);
-
-  const load = async <T,>(pathname: string, asc?: string): Promise<T> => {
-    const url = new URL(pathname, host);
-    if (asc) url.searchParams.set("asc", asc);
-    applyScope(url, scope);
-    const response = await fetch(url, { headers, cache: "no-store" });
-    if (!response.ok) {
-      const detail = await response.text();
-      throw new Error(`Contentstack ${response.status}: ${detail.slice(0, 180)}`);
-    }
-    return response.json() as Promise<T>;
-  };
-
-  const [footerBody, itemBody] = await Promise.all([
-    load<{ entries?: CsFooter[] }>("/v3/content_types/footer/entries"),
-    load<{ entries?: CsFooterItem[] }>("/v3/content_types/footer_item/entries", "rank"),
+  const [footerEntries, itemEntries] = await Promise.all([
+    loadContentfulEntries<CsFooter>("footer", scope),
+    loadContentfulEntries<CsFooterItem>("footer_item", scope),
   ]);
+  const footerBody = { entries: footerEntries };
+  const itemBody = { entries: itemEntries };
   const footerEntry = pickScoped(footerBody.entries ?? [], scope.siteUid || "");
   const items = (itemBody.entries ?? []).filter((item) => entryMatchesSite(item.sites, scope.siteUid || ""));
   const footer = footerOf(footerEntry, items);
@@ -339,27 +292,11 @@ function panelOf(entry: CsHomePanel): StorePanel | null {
 
 export async function getHomePanels(scopeOrPreview?: StoreScope | string): Promise<StorePanel[]> {
   const scope = asScope(scopeOrPreview);
-  const apiKey = process.env.CONTENTSTACK_API_KEY;
-  const deliveryToken = process.env.CONTENTSTACK_DELIVERY_TOKEN;
-  const previewToken = process.env.CONTENTSTACK_PREVIEW_TOKEN;
-  if (!apiKey || !deliveryToken) return [];
-
-  const preview = Boolean(scope.livePreview && previewToken);
-  const host = preview
-    ? process.env.CONTENTSTACK_PREVIEW_HOST || "https://eu-rest-preview.contentstack.com"
-    : process.env.CONTENTSTACK_CDN || "https://eu-cdn.contentstack.com";
-  const url = new URL("/v3/content_types/home_panel/entries", host);
-  url.searchParams.set("asc", "rank");
-  applyScope(url, scope);
-  const response = await fetch(url, {
-    headers: stackHeaders(apiKey, preview ? previewToken! : deliveryToken, preview),
-    cache: "no-store",
-  });
-  if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(`Contentstack ${response.status}: ${detail.slice(0, 180)}`);
-  }
-  const body = await response.json() as { entries?: CsHomePanel[] };
+  if (!process.env.CONTENTFUL_SPACE_ID || !process.env.CONTENTFUL_DELIVERY_TOKEN) return [];
+  const entries = await loadContentfulEntries<CsHomePanel>("home_panel", scope);
+  const body = {
+    entries: entries.slice().sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0)),
+  };
   return (body.entries ?? []).flatMap((entry) => {
     if (!entryMatchesSite(entry.sites, scope.siteUid || "")) return [];
     const panel = panelOf(entry);
@@ -617,29 +554,8 @@ function offerOf(entry: CsOffer | undefined): StoreHome["offer"] {
 
 async function entriesOf<T>(contentType: string, scopeOrPreview?: StoreScope | string): Promise<T[]> {
   const scope = asScope(scopeOrPreview);
-  const apiKey = process.env.CONTENTSTACK_API_KEY;
-  const deliveryToken = process.env.CONTENTSTACK_DELIVERY_TOKEN;
-  const previewToken = process.env.CONTENTSTACK_PREVIEW_TOKEN;
-  if (!apiKey || !deliveryToken) return [];
-  const preview = Boolean(scope.livePreview && previewToken);
-  const host = preview
-    ? process.env.CONTENTSTACK_PREVIEW_HOST || "https://eu-rest-preview.contentstack.com"
-    : process.env.CONTENTSTACK_CDN || "https://eu-cdn.contentstack.com";
-  const url = new URL(`/v3/content_types/${contentType}/entries`, host);
-  url.searchParams.set("limit", "100");
-  applyScope(url, scope);
-  const headers = stackHeaders(apiKey, preview ? previewToken! : deliveryToken, preview);
-  let response = await fetch(url, { headers, cache: "no-store" });
-  if (!response.ok && scope.locale && scope.locale !== "en-us") {
-    url.searchParams.set("locale", "en-us");
-    response = await fetch(url, { headers, cache: "no-store" });
-  }
-  if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(`Contentstack ${response.status}: ${detail.slice(0, 180)}`);
-  }
-  const body = await response.json() as { entries?: T[] };
-  return body.entries ?? [];
+  if (!process.env.CONTENTFUL_SPACE_ID || !process.env.CONTENTFUL_DELIVERY_TOKEN) return [];
+  return loadContentfulEntries<T>(contentType, scope);
 }
 
 async function firstEntry<T>(contentType: string, scope?: StoreScope): Promise<T | undefined> {
@@ -977,25 +893,12 @@ function catalogOf(entry: CsCategoryPage, siteUid = ""): StoreCatalog | null {
 }
 
 async function delivery<T>(pathname: string, params: { include?: string[]; query?: string; locale?: string } = {}): Promise<T> {
-  const apiKey = process.env.CONTENTSTACK_API_KEY;
-  const deliveryToken = process.env.CONTENTSTACK_DELIVERY_TOKEN;
-  if (!apiKey || !deliveryToken) throw new Error("Contentstack is not configured");
-  const host = process.env.CONTENTSTACK_CDN || "https://eu-cdn.contentstack.com";
-  const url = new URL(pathname, host);
-  for (const include of params.include ?? []) url.searchParams.append("include[]", include);
-  if (params.query) url.searchParams.set("query", params.query);
-  applyScope(url, { locale: params.locale });
-  const headers = { api_key: apiKey, access_token: deliveryToken };
-  let response = await fetch(url, { headers, cache: "no-store" });
-  if (!response.ok && params.locale && params.locale !== "en-us") {
-    url.searchParams.set("locale", "en-us");
-    response = await fetch(url, { headers, cache: "no-store" });
-  }
-  if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(`Contentstack ${response.status}: ${detail.slice(0, 180)}`);
-  }
-  return response.json() as Promise<T>;
+  const contentType = pathname.match(/content_types\/([^/]+)\/entries/)?.[1];
+  if (!contentType) throw new Error(`Unsupported content path ${pathname}`);
+  if (!process.env.CONTENTFUL_SPACE_ID || !process.env.CONTENTFUL_DELIVERY_TOKEN) throw new Error("Contentful is not configured");
+  const query = params.query ? JSON.parse(params.query) as Record<string, string> : undefined;
+  const entries = await loadContentfulEntries(contentType, { locale: params.locale }, query);
+  return { entries } as T;
 }
 
 export async function getCategoryPage(urlPath: string, scopeOrPreview?: StoreScope | string): Promise<StoreCatalog | null> {
